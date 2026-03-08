@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Plus, Wallet } from "lucide-react";
-import WelcomeScreen from "@/components/WelcomeScreen";
+import { Plus, Wallet, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AddExpenseSheet from "@/components/AddExpenseSheet";
 import ExpenseList from "@/components/ExpenseList";
@@ -9,7 +8,9 @@ import BottomNav from "@/components/BottomNav";
 import StatsPage from "@/components/StatsPage";
 import ProfilePage from "@/components/ProfilePage";
 import DuesPage from "@/components/DuesPage";
+import AuthPage from "@/components/AuthPage";
 import { useExpenses } from "@/hooks/useExpenses";
+import { useAuth } from "@/hooks/useAuth";
 
 function getGreeting(): string {
   const h = new Date().getHours();
@@ -21,10 +22,11 @@ function getGreeting(): string {
 }
 
 const HomePage = () => {
+  const { user, loading: authLoading, signOut } = useAuth();
   const [tab, setTab] = useState<"home" | "stats" | "dues" | "profile">("home");
   const [sheetOpen, setSheetOpen] = useState(false);
   const {
-    currency, currencyCode, changeCurrency,
+    loading, currency, currencyCode, changeCurrency,
     addExpense, removeExpense,
     todayExpenses, todayTotal,
     weeklyData, weekTotal, weekExpenses,
@@ -33,18 +35,33 @@ const HomePage = () => {
     pendingBorrowings, totalOwed,
   } = useExpenses();
 
-  const greeting = getGreeting();
-
-  if (!username) {
-    return <WelcomeScreen onSubmit={setUsername} />;
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
+
+  if (!user) {
+    return <AuthPage />;
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const greeting = getGreeting();
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="mx-auto max-w-md px-4 pt-6">
         {tab === "home" && (
           <div className="animate-slide-up">
-            {/* Greeting Header */}
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground font-medium">
@@ -60,7 +77,6 @@ const HomePage = () => {
               </div>
             </div>
 
-            {/* Summary Cards */}
             <div className="mb-4 grid grid-cols-2 gap-3">
               <div className="rounded-2xl bg-gradient-to-br from-primary to-primary/80 p-4 text-primary-foreground shadow-elevated">
                 <p className="text-[10px] opacity-80">This week</p>
@@ -135,6 +151,7 @@ const HomePage = () => {
             onChangeCurrency={changeCurrency}
             username={username}
             onChangeUsername={setUsername}
+            onSignOut={signOut}
           />
         )}
       </div>
