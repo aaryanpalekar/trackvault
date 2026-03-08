@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus, Wallet } from "lucide-react";
+import WelcomeScreen from "@/components/WelcomeScreen";
 import { Button } from "@/components/ui/button";
 import AddExpenseSheet from "@/components/AddExpenseSheet";
 import ExpenseList from "@/components/ExpenseList";
