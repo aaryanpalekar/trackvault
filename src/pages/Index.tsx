@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus, Wallet } from "lucide-react";
+import WelcomeScreen from "@/components/WelcomeScreen";
 import { Button } from "@/components/ui/button";
 import AddExpenseSheet from "@/components/AddExpenseSheet";
 import ExpenseList from "@/components/ExpenseList";
@@ -34,6 +35,10 @@ const HomePage = () => {
 
   const greeting = getGreeting();
 
+  if (!username) {
+    return <WelcomeScreen onSubmit={setUsername} />;
+  }
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="mx-auto max-w-md px-4 pt-6">
@@ -43,7 +48,7 @@ const HomePage = () => {
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground font-medium">
-                  {greeting}{username ? `, ${username}` : ""} 👋
+                  {greeting}, {username} 👋
                 </p>
                 <h1 className="font-heading text-3xl font-bold">
                   {currency.symbol}{todayTotal.toLocaleString()}
