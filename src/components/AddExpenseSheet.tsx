@@ -35,7 +35,7 @@ export default function AddExpenseSheet({ open, onClose, onAdd, currency }: AddE
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md animate-slide-up rounded-t-3xl bg-card p-6 pb-8 shadow-elevated">
+      <div className="relative w-full max-w-md max-h-[85vh] overflow-y-auto animate-slide-up rounded-t-3xl bg-card p-6 pb-24 shadow-elevated">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-heading text-lg font-bold">Add Expense</h2>
           <button onClick={onClose} className="rounded-full p-1 hover:bg-secondary">
