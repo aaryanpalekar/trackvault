@@ -45,11 +45,9 @@ export default function ProfilePage({ currencyCode, onChangeCurrency, username, 
 
       {/* Username */}
       <div className="mb-4 rounded-2xl bg-card p-4 shadow-card">
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-3 mb-1">
           <UserCircle className="h-5 w-5 text-primary" />
-          <div>
-            <p className="text-sm font-semibold">Your Name</p>
-            <p className="text-[10px] text-muted-foreground">Used for greeting you</p>
+          <p className="text-sm font-semibold">Your Name</p>
           </div>
         </div>
         <Input
