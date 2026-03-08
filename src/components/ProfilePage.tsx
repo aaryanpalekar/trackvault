@@ -48,7 +48,6 @@ export default function ProfilePage({ currencyCode, onChangeCurrency, username, 
         <div className="flex items-center gap-3 mb-1">
           <UserCircle className="h-5 w-5 text-primary" />
           <p className="text-sm font-semibold">Your Name</p>
-          </div>
         </div>
         <Input
           placeholder="Enter your name"
