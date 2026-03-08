@@ -15,7 +15,7 @@ interface AddExpenseSheetProps {
 
 export default function AddExpenseSheet({ open, onClose, onAdd, currency }: AddExpenseSheetProps) {
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState(CATEGORIES[0].label);
+  const [category, setCategory] = useState<string>(CATEGORIES[0].label);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("upi");
   const [note, setNote] = useState("");
 
