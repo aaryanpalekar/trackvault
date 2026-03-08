@@ -5,8 +5,18 @@ export interface Expense {
   amount: number;
   category: string;
   paymentMethod: PaymentMethod;
-  timestamp: number; // ms
+  timestamp: number;
   note?: string;
+}
+
+export interface Borrowing {
+  id: string;
+  personName: string;
+  amount: number;
+  reason?: string;
+  borrowedOn: number; // timestamp
+  settled: boolean;
+  settledOn?: number;
 }
 
 export const QUICK_AMOUNTS = [10, 20, 50, 100] as const;
