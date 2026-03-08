@@ -1,16 +1,20 @@
 import { CURRENCIES } from "@/lib/currencies";
-import { Check, Globe, Moon, Sun } from "lucide-react";
+import { Check, Globe, Moon, Sun, UserCircle } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 interface ProfilePageProps {
   currencyCode: string;
   onChangeCurrency: (code: string) => void;
+  username: string;
+  onChangeUsername: (name: string) => void;
 }
 
-export default function ProfilePage({ currencyCode, onChangeCurrency }: ProfilePageProps) {
+export default function ProfilePage({ currencyCode, onChangeCurrency, username, onChangeUsername }: ProfilePageProps) {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const [search, setSearch] = useState("");
+  const [nameInput, setNameInput] = useState(username);
 
   const toggleDark = () => {
     const next = !dark;
@@ -27,6 +31,10 @@ export default function ProfilePage({ currencyCode, onChangeCurrency }: ProfileP
     }
   }, []);
 
+  const handleNameBlur = () => {
+    onChangeUsername(nameInput.trim());
+  };
+
   const filteredCurrencies = CURRENCIES.filter(
     c => c.name.toLowerCase().includes(search.toLowerCase()) || c.code.toLowerCase().includes(search.toLowerCase())
   );
@@ -34,6 +42,25 @@ export default function ProfilePage({ currencyCode, onChangeCurrency }: ProfileP
   return (
     <div className="animate-slide-up">
       <h1 className="mb-6 font-heading text-2xl font-bold">Settings</h1>
+
+      {/* Username */}
+      <div className="mb-4 rounded-2xl bg-card p-4 shadow-card">
+        <div className="flex items-center gap-3 mb-3">
+          <UserCircle className="h-5 w-5 text-primary" />
+          <div>
+            <p className="text-sm font-semibold">Your Name</p>
+            <p className="text-[10px] text-muted-foreground">Used for greeting you</p>
+          </div>
+        </div>
+        <Input
+          placeholder="Enter your name"
+          value={nameInput}
+          onChange={e => setNameInput(e.target.value)}
+          onBlur={handleNameBlur}
+          onKeyDown={e => e.key === "Enter" && handleNameBlur()}
+          className="rounded-xl"
+        />
+      </div>
 
       {/* Theme Toggle */}
       <div className="mb-4 rounded-2xl bg-card p-4 shadow-card">

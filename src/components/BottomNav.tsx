@@ -1,14 +1,17 @@
-import { Home, BarChart3, User } from "lucide-react";
+import { Home, BarChart3, User, HandCoins } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+type Tab = "home" | "stats" | "dues" | "profile";
+
 interface BottomNavProps {
-  active: "home" | "stats" | "profile";
-  onNavigate: (tab: "home" | "stats" | "profile") => void;
+  active: Tab;
+  onNavigate: (tab: Tab) => void;
 }
 
 const tabs = [
   { id: "home" as const, label: "Home", icon: Home },
   { id: "stats" as const, label: "Stats", icon: BarChart3 },
+  { id: "dues" as const, label: "Dues", icon: HandCoins },
   { id: "profile" as const, label: "Profile", icon: User },
 ];
 
@@ -21,7 +24,7 @@ export default function BottomNav({ active, onNavigate }: BottomNavProps) {
             key={id}
             onClick={() => onNavigate(id)}
             className={cn(
-              "flex flex-col items-center gap-0.5 px-5 py-1.5 rounded-xl transition-all",
+              "flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all",
               active === id
                 ? "text-primary"
                 : "text-muted-foreground hover:text-foreground"
