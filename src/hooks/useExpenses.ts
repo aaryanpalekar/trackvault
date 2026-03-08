@@ -1,61 +1,103 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { Expense, Borrowing, PaymentMethod } from "@/lib/types";
-import {
-  getExpenses, saveExpense, deleteExpense,
-  getSavedCurrency, saveCurrency,
-  getBorrowings, saveBorrowing, updateBorrowing, deleteBorrowing,
-  getUsername, saveUsername,
-} from "@/lib/expense-store";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { getCurrency } from "@/lib/currencies";
 
 export function useExpenses() {
-  const [expenses, setExpenses] = useState<Expense[]>(getExpenses);
-  const [borrowings, setBorrowings] = useState<Borrowing[]>(getBorrowings);
-  const [currencyCode, setCurrencyCode] = useState(getSavedCurrency);
-  const [username, setUsernameState] = useState(getUsername);
+  const { user } = useAuth();
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [borrowings, setBorrowings] = useState<Borrowing[]>([]);
+  const [currencyCode, setCurrencyCode] = useState("INR");
+  const [username, setUsernameState] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const currency = useMemo(() => getCurrency(currencyCode), [currencyCode]);
 
-  const addExpense = useCallback((amount: number, category: string, paymentMethod: PaymentMethod, note?: string) => {
-    const expense: Expense = {
-      id: crypto.randomUUID(), amount, category, paymentMethod, timestamp: Date.now(), note,
-    };
-    saveExpense(expense);
-    setExpenses(getExpenses());
+  // Load data from Supabase
+  useEffect(() => {
+    if (!user) return;
+    setLoading(true);
+    Promise.all([
+      supabase.from("expenses").select("*").order("created_at", { ascending: false }),
+      supabase.from("borrowings").select("*").order("created_at", { ascending: false }),
+      supabase.from("user_preferences").select("*").single(),
+      supabase.from("profiles").select("*").eq("user_id", user.id).single(),
+    ]).then(([expRes, borRes, prefRes, profRes]) => {
+      if (expRes.data) {
+        setExpenses(expRes.data.map(e => ({
+          id: e.id, amount: Number(e.amount), category: e.category,
+          paymentMethod: e.payment_method as PaymentMethod, timestamp: new Date(e.created_at).getTime(),
+          note: e.note ?? undefined,
+        })));
+      }
+      if (borRes.data) {
+        setBorrowings(borRes.data.map(b => ({
+          id: b.id, personName: b.person_name, amount: Number(b.amount),
+          reason: b.reason ?? undefined, borrowedOn: new Date(b.borrowed_on).getTime(),
+          settled: b.settled, settledOn: b.settled_on ? new Date(b.settled_on).getTime() : undefined,
+        })));
+      }
+      if (prefRes.data) setCurrencyCode(prefRes.data.currency_code);
+      if (profRes.data) setUsernameState(profRes.data.display_name);
+      setLoading(false);
+    });
+  }, [user]);
+
+  const addExpense = useCallback(async (amount: number, category: string, paymentMethod: PaymentMethod, note?: string) => {
+    if (!user) return;
+    const { data } = await supabase.from("expenses").insert({
+      user_id: user.id, amount, category, payment_method: paymentMethod, note,
+    }).select().single();
+    if (data) {
+      setExpenses(prev => [{
+        id: data.id, amount: Number(data.amount), category: data.category,
+        paymentMethod: data.payment_method as PaymentMethod, timestamp: new Date(data.created_at).getTime(),
+        note: data.note ?? undefined,
+      }, ...prev]);
+    }
+  }, [user]);
+
+  const removeExpense = useCallback(async (id: string) => {
+    await supabase.from("expenses").delete().eq("id", id);
+    setExpenses(prev => prev.filter(e => e.id !== id));
   }, []);
 
-  const removeExpense = useCallback((id: string) => {
-    deleteExpense(id);
-    setExpenses(getExpenses());
-  }, []);
-
-  const changeCurrency = useCallback((code: string) => {
-    saveCurrency(code);
+  const changeCurrency = useCallback(async (code: string) => {
+    if (!user) return;
     setCurrencyCode(code);
-  }, []);
+    await supabase.from("user_preferences").update({ currency_code: code }).eq("user_id", user.id);
+  }, [user]);
 
-  const setUsername = useCallback((name: string) => {
-    saveUsername(name);
+  const setUsername = useCallback(async (name: string) => {
+    if (!user) return;
     setUsernameState(name);
+    await supabase.from("profiles").update({ display_name: name }).eq("user_id", user.id);
+  }, [user]);
+
+  const addBorrowing = useCallback(async (personName: string, amount: number, reason?: string) => {
+    if (!user) return;
+    const { data } = await supabase.from("borrowings").insert({
+      user_id: user.id, person_name: personName, amount, reason,
+    }).select().single();
+    if (data) {
+      setBorrowings(prev => [{
+        id: data.id, personName: data.person_name, amount: Number(data.amount),
+        reason: data.reason ?? undefined, borrowedOn: new Date(data.borrowed_on).getTime(),
+        settled: data.settled, settledOn: undefined,
+      }, ...prev]);
+    }
+  }, [user]);
+
+  const settleBorrowing = useCallback(async (id: string) => {
+    const now = new Date().toISOString();
+    await supabase.from("borrowings").update({ settled: true, settled_on: now }).eq("id", id);
+    setBorrowings(prev => prev.map(b => b.id === id ? { ...b, settled: true, settledOn: Date.now() } : b));
   }, []);
 
-  // Borrowing actions
-  const addBorrowing = useCallback((personName: string, amount: number, reason?: string) => {
-    const b: Borrowing = {
-      id: crypto.randomUUID(), personName, amount, reason, borrowedOn: Date.now(), settled: false,
-    };
-    saveBorrowing(b);
-    setBorrowings(getBorrowings());
-  }, []);
-
-  const settleBorrowing = useCallback((id: string) => {
-    updateBorrowing(id, { settled: true, settledOn: Date.now() });
-    setBorrowings(getBorrowings());
-  }, []);
-
-  const removeBorrowing = useCallback((id: string) => {
-    deleteBorrowing(id);
-    setBorrowings(getBorrowings());
+  const removeBorrowing = useCallback(async (id: string) => {
+    await supabase.from("borrowings").delete().eq("id", id);
+    setBorrowings(prev => prev.filter(b => b.id !== id));
   }, []);
 
   const todayExpenses = useMemo(() => {
@@ -97,7 +139,7 @@ export function useExpenses() {
   const totalOwed = useMemo(() => pendingBorrowings.reduce((s, b) => s + b.amount, 0), [pendingBorrowings]);
 
   return {
-    expenses, currency, currencyCode, changeCurrency,
+    loading, expenses, currency, currencyCode, changeCurrency,
     addExpense, removeExpense,
     todayExpenses, todayTotal,
     weekExpenses, weeklyData, weekTotal,

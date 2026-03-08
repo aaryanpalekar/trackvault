@@ -1,7 +1,8 @@
 import { CURRENCIES } from "@/lib/currencies";
-import { Check, Globe, Moon, Sun, UserCircle } from "lucide-react";
+import { Check, Globe, Moon, Sun, UserCircle, LogOut, Pencil } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface ProfilePageProps {
@@ -9,11 +10,13 @@ interface ProfilePageProps {
   onChangeCurrency: (code: string) => void;
   username: string;
   onChangeUsername: (name: string) => void;
+  onSignOut: () => void;
 }
 
-export default function ProfilePage({ currencyCode, onChangeCurrency, username, onChangeUsername }: ProfilePageProps) {
+export default function ProfilePage({ currencyCode, onChangeCurrency, username, onChangeUsername, onSignOut }: ProfilePageProps) {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const [search, setSearch] = useState("");
+  const [editing, setEditing] = useState(false);
   const [nameInput, setNameInput] = useState(username);
 
   const toggleDark = () => {
@@ -31,8 +34,11 @@ export default function ProfilePage({ currencyCode, onChangeCurrency, username, 
     }
   }, []);
 
-  const handleNameBlur = () => {
-    onChangeUsername(nameInput.trim());
+  const handleSaveName = () => {
+    if (nameInput.trim()) {
+      onChangeUsername(nameInput.trim());
+      setEditing(false);
+    }
   };
 
   const filteredCurrencies = CURRENCIES.filter(
@@ -43,20 +49,35 @@ export default function ProfilePage({ currencyCode, onChangeCurrency, username, 
     <div className="animate-slide-up">
       <h1 className="mb-6 font-heading text-2xl font-bold">Settings</h1>
 
-      {/* Username */}
+      {/* Profile Name */}
       <div className="mb-4 rounded-2xl bg-card p-4 shadow-card">
-        <div className="flex items-center gap-3 mb-1">
-          <UserCircle className="h-5 w-5 text-primary" />
-          <p className="text-sm font-semibold">Your Name</p>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-lg">
+            {username.charAt(0).toUpperCase()}
+          </div>
+          <div className="flex-1">
+            {editing ? (
+              <div className="flex gap-2">
+                <Input
+                  value={nameInput}
+                  onChange={e => setNameInput(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleSaveName()}
+                  className="rounded-xl h-9"
+                  autoFocus
+                />
+                <Button size="sm" onClick={handleSaveName} className="rounded-xl">Save</Button>
+                <Button size="sm" variant="ghost" onClick={() => { setEditing(false); setNameInput(username); }} className="rounded-xl">Cancel</Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold">{username}</p>
+                <button onClick={() => setEditing(true)} className="rounded-lg p-1 text-muted-foreground hover:text-foreground transition-colors">
+                  <Pencil className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-        <Input
-          placeholder="Enter your name"
-          value={nameInput}
-          onChange={e => setNameInput(e.target.value)}
-          onBlur={handleNameBlur}
-          onKeyDown={e => e.key === "Enter" && handleNameBlur()}
-          className="rounded-xl"
-        />
       </div>
 
       {/* Theme Toggle */}
@@ -87,7 +108,7 @@ export default function ProfilePage({ currencyCode, onChangeCurrency, username, 
       </div>
 
       {/* Currency Selection */}
-      <div className="rounded-2xl bg-card p-4 shadow-card">
+      <div className="mb-4 rounded-2xl bg-card p-4 shadow-card">
         <div className="mb-3 flex items-center gap-2">
           <Globe className="h-4 w-4 text-muted-foreground" />
           <h3 className="font-heading text-sm font-semibold">Currency</h3>
@@ -106,9 +127,7 @@ export default function ProfilePage({ currencyCode, onChangeCurrency, username, 
               onClick={() => onChangeCurrency(c.code)}
               className={cn(
                 "flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition-colors",
-                currencyCode === c.code
-                  ? "bg-primary/10 text-primary"
-                  : "hover:bg-secondary"
+                currencyCode === c.code ? "bg-primary/10 text-primary" : "hover:bg-secondary"
               )}
             >
               <div>
@@ -120,6 +139,11 @@ export default function ProfilePage({ currencyCode, onChangeCurrency, username, 
           ))}
         </div>
       </div>
+
+      {/* Sign Out */}
+      <Button variant="outline" onClick={onSignOut} className="w-full rounded-xl gap-2">
+        <LogOut className="h-4 w-4" /> Sign out
+      </Button>
     </div>
   );
 }
