@@ -24,6 +24,7 @@ export type Database = {
           reason: string | null
           settled: boolean
           settled_on: string | null
+          type: string
           user_id: string
         }
         Insert: {
@@ -35,6 +36,7 @@ export type Database = {
           reason?: string | null
           settled?: boolean
           settled_on?: string | null
+          type?: string
           user_id: string
         }
         Update: {
@@ -46,6 +48,7 @@ export type Database = {
           reason?: string | null
           settled?: boolean
           settled_on?: string | null
+          type?: string
           user_id?: string
         }
         Relationships: []
