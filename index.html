@@ -1,11 +1,9 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <script>
-      (function(){var t=localStorage.getItem('theme');if(t==='dark'||(t==null&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}})();
-    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>try{if(localStorage.getItem('theme')==='dark'||(localStorage.getItem('theme')===null&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')}catch(e){}</script>
     <!-- TODO: Set the document title to the name of your application -->
     <title>TrackVault</title>
     <meta name="description" content="Track your daily expenses easily and stay in control of your money">
