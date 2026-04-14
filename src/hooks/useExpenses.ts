@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { Expense, Borrowing, PaymentMethod } from "@/lib/types";
+import { Expense, Borrowing, PaymentMethod, BorrowingType } from "@/lib/types";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { getCurrency } from "@/lib/currencies";
@@ -14,7 +14,6 @@ export function useExpenses() {
 
   const currency = useMemo(() => getCurrency(currencyCode), [currencyCode]);
 
-  // Load data from Supabase
   useEffect(() => {
     if (!user) return;
     setLoading(true);
@@ -36,6 +35,7 @@ export function useExpenses() {
           id: b.id, personName: b.person_name, amount: Number(b.amount),
           reason: b.reason ?? undefined, borrowedOn: new Date(b.borrowed_on).getTime(),
           settled: b.settled, settledOn: b.settled_on ? new Date(b.settled_on).getTime() : undefined,
+          type: ((b as any).type as BorrowingType) || "lent",
         })));
       }
       if (prefRes.data) setCurrencyCode(prefRes.data.currency_code);
@@ -75,16 +75,17 @@ export function useExpenses() {
     await supabase.from("profiles").update({ display_name: name }).eq("user_id", user.id);
   }, [user]);
 
-  const addBorrowing = useCallback(async (personName: string, amount: number, reason?: string) => {
+  const addBorrowing = useCallback(async (personName: string, amount: number, reason?: string, type: BorrowingType = "lent") => {
     if (!user) return;
     const { data } = await supabase.from("borrowings").insert({
-      user_id: user.id, person_name: personName, amount, reason,
-    }).select().single();
+      user_id: user.id, person_name: personName, amount, reason, type,
+    } as any).select().single();
     if (data) {
       setBorrowings(prev => [{
         id: data.id, personName: data.person_name, amount: Number(data.amount),
         reason: data.reason ?? undefined, borrowedOn: new Date(data.borrowed_on).getTime(),
         settled: data.settled, settledOn: undefined,
+        type: ((data as any).type as BorrowingType) || "lent",
       }, ...prev]);
     }
   }, [user]);
@@ -136,7 +137,8 @@ export function useExpenses() {
   const weekTotal = useMemo(() => weekExpenses.reduce((s, e) => s + e.amount, 0), [weekExpenses]);
 
   const pendingBorrowings = useMemo(() => borrowings.filter(b => !b.settled), [borrowings]);
-  const totalOwed = useMemo(() => pendingBorrowings.reduce((s, b) => s + b.amount, 0), [pendingBorrowings]);
+  const totalOwed = useMemo(() => pendingBorrowings.filter(b => b.type === "lent").reduce((s, b) => s + b.amount, 0), [pendingBorrowings]);
+  const totalIOwe = useMemo(() => pendingBorrowings.filter(b => b.type === "owed").reduce((s, b) => s + b.amount, 0), [pendingBorrowings]);
 
   return {
     loading, expenses, currency, currencyCode, changeCurrency,
@@ -145,6 +147,6 @@ export function useExpenses() {
     weekExpenses, weeklyData, weekTotal,
     username, setUsername,
     borrowings, addBorrowing, settleBorrowing, removeBorrowing,
-    pendingBorrowings, totalOwed,
+    pendingBorrowings, totalOwed, totalIOwe,
   };
 }

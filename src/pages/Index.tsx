@@ -27,12 +27,12 @@ const HomePage = () => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const {
     loading, currency, currencyCode, changeCurrency,
-    addExpense, removeExpense,
+    addExpense, removeExpense, expenses,
     todayExpenses, todayTotal,
     weeklyData, weekTotal, weekExpenses,
     username, setUsername,
     borrowings, addBorrowing, settleBorrowing, removeBorrowing,
-    pendingBorrowings, totalOwed,
+    pendingBorrowings, totalOwed, totalIOwe,
   } = useExpenses();
 
   if (authLoading) {
@@ -83,13 +83,15 @@ const HomePage = () => {
                 <p className="font-heading text-xl font-bold">{currency.symbol}{weekTotal.toLocaleString()}</p>
                 <p className="text-[10px] opacity-70">{weekExpenses.length} txns</p>
               </div>
-              {totalOwed > 0 ? (
+              {totalOwed > 0 || totalIOwe > 0 ? (
                 <div
                   className="rounded-2xl bg-gradient-to-br from-accent to-accent/80 p-4 text-accent-foreground shadow-elevated cursor-pointer"
                   onClick={() => setTab("dues")}
                 >
-                  <p className="text-[10px] opacity-80">People owe you</p>
-                  <p className="font-heading text-xl font-bold">{currency.symbol}{totalOwed.toLocaleString()}</p>
+                  <p className="text-[10px] opacity-80">Net dues</p>
+                  <p className="font-heading text-xl font-bold">
+                    {totalOwed >= totalIOwe ? "+" : "-"}{currency.symbol}{Math.abs(totalOwed - totalIOwe).toLocaleString()}
+                  </p>
                   <p className="text-[10px] opacity-70">{pendingBorrowings.length} pending</p>
                 </div>
               ) : (
@@ -130,7 +132,7 @@ const HomePage = () => {
         )}
 
         {tab === "stats" && (
-          <StatsPage weeklyData={weeklyData} weekExpenses={weekExpenses} todayExpenses={todayExpenses} currency={currency} />
+          <StatsPage weeklyData={weeklyData} allExpenses={expenses} currency={currency} />
         )}
 
         {tab === "dues" && (
@@ -138,6 +140,7 @@ const HomePage = () => {
             borrowings={borrowings}
             pendingBorrowings={pendingBorrowings}
             totalOwed={totalOwed}
+            totalIOwe={totalIOwe}
             currency={currency}
             onAdd={addBorrowing}
             onSettle={settleBorrowing}

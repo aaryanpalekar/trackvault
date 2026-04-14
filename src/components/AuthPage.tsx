@@ -3,17 +3,19 @@ import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sparkles, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { Sparkles, Mail, Lock, User, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function AuthPage() {
   const { signIn, signUp } = useAuth();
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -24,6 +26,17 @@ export default function AuthPage() {
     setGoogleLoading(false);
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) return toast.error("Please enter your email");
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) toast.error(error.message);
+    else toast.success("Password reset link sent to your email!");
+    setLoading(false);
+  };
+
   const handleSubmit = async () => {
     if (!email || !password) return toast.error("Please fill all fields");
     if (mode === "signup" && !displayName.trim()) return toast.error("Please enter your name");
@@ -32,13 +45,55 @@ export default function AuthPage() {
     if (mode === "signup") {
       const { error } = await signUp(email, password, displayName.trim());
       if (error) toast.error(error.message);
-      else toast.success("Account created! Check email to verify.");
+      else toast.success("Account created! You're signed in.");
     } else {
       const { error } = await signIn(email, password);
       if (error) toast.error(error.message);
     }
     setLoading(false);
   };
+
+  if (mode === "forgot") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-6">
+        <div className="w-full max-w-sm animate-slide-up">
+          <div className="mb-6 flex justify-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10">
+              <Lock className="h-8 w-8 text-primary" />
+            </div>
+          </div>
+          <h1 className="mb-1 text-center font-heading text-2xl font-bold">Reset Password</h1>
+          <p className="mb-6 text-center text-sm text-muted-foreground">
+            Enter your email and we'll send you a reset link
+          </p>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleForgotPassword()}
+              className="rounded-xl pl-10 py-6"
+            />
+          </div>
+          <Button
+            onClick={handleForgotPassword}
+            disabled={loading}
+            className="mt-4 w-full rounded-xl py-6 text-base font-semibold"
+          >
+            {loading ? "Please wait..." : "Send Reset Link"}
+          </Button>
+          <p className="mt-4 text-center text-xs text-muted-foreground">
+            Remember your password?{" "}
+            <button onClick={() => setMode("login")} className="font-semibold text-primary hover:underline">
+              Sign in
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6">
@@ -80,15 +135,31 @@ export default function AuthPage() {
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handleSubmit()}
-              className="rounded-xl pl-10 py-6"
+              className="rounded-xl pl-10 pr-10 py-6"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
           </div>
         </div>
+
+        {mode === "login" && (
+          <button
+            onClick={() => setMode("forgot")}
+            className="mt-2 block text-xs text-primary hover:underline"
+          >
+            Forgot password?
+          </button>
+        )}
 
         <Button
           onClick={handleSubmit}

@@ -9,14 +9,17 @@ export interface Expense {
   note?: string;
 }
 
+export type BorrowingType = "lent" | "owed";
+
 export interface Borrowing {
   id: string;
   personName: string;
   amount: number;
   reason?: string;
-  borrowedOn: number; // timestamp
+  borrowedOn: number;
   settled: boolean;
   settledOn?: number;
+  type: BorrowingType;
 }
 
 export const QUICK_AMOUNTS = [10, 20, 50, 100] as const;
