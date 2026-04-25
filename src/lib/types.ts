@@ -41,3 +41,22 @@ export const PAYMENT_METHODS: { value: PaymentMethod; label: string; icon: strin
   { value: "upi", label: "UPI", icon: "📱" },
   { value: "net_banking", label: "Net Banking", icon: "🏦" },
 ];
+
+export interface Income {
+  id: string;
+  amount: number;
+  source: string;
+  note?: string;
+  /** Epoch ms when the income was received */
+  receivedOn: number;
+}
+
+export const INCOME_SOURCES = [
+  { label: "Salary", emoji: "💼" },
+  { label: "Freelance", emoji: "💻" },
+  { label: "Refund", emoji: "↩️" },
+  { label: "Gift", emoji: "🎁" },
+  { label: "Friend", emoji: "🤝" },
+  { label: "Investment", emoji: "📈" },
+  { label: "Other", emoji: "💰" },
+] as const;
