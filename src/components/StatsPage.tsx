@@ -327,6 +327,8 @@ export default function StatsPage({ allExpenses, currency, onEdit, onDelete }: S
                   paddingAngle={2}
                   stroke="hsl(var(--card))"
                   strokeWidth={2}
+                  onClick={handlePieClick}
+                  className="cursor-pointer"
                 >
                   {categoryBreakdown.map((_, i) => (
                     <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
@@ -340,11 +342,15 @@ export default function StatsPage({ allExpenses, currency, onEdit, onDelete }: S
                     color: "hsl(var(--popover-foreground))",
                     fontSize: "12px",
                   }}
-                  formatter={(v: number) => [`${currency.symbol}${v.toLocaleString()}`, "Spent"]}
+                  formatter={(v: number, _n, p: any) => [
+                    `${currency.symbol}${v.toLocaleString()}`,
+                    `${p?.payload?.emoji ?? ""} ${p?.payload?.name ?? "Spent"}`,
+                  ]}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
+          <p className="mt-1 text-center text-[10px] text-muted-foreground">Tap a slice to see items</p>
           <div className="mt-2 grid grid-cols-2 gap-1.5">
             {categoryBreakdown.map((item, i) => {
               const pct = periodTotal > 0 ? (item.value / periodTotal) * 100 : 0;
