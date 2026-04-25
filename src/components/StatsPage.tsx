@@ -6,7 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from "recharts";
 import {
-  TrendingDown, CreditCard, Tag, Calendar as CalendarIcon, ChevronLeft, ChevronRight,
+  TrendingDown, CreditCard, Tag, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ import {
   startOfYear, endOfYear, addMonths, subMonths, getDaysInMonth,
 } from "date-fns";
 import ExpenseList from "@/components/ExpenseList";
+import DayDetailDrawer from "@/components/DayDetailDrawer";
 
 type View = "day" | "month" | "year";
 
