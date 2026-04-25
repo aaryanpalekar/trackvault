@@ -355,14 +355,18 @@ export default function StatsPage({ allExpenses, currency, onEdit, onDelete }: S
             {categoryBreakdown.map((item, i) => {
               const pct = periodTotal > 0 ? (item.value / periodTotal) * 100 : 0;
               return (
-                <div key={item.name} className="flex items-center gap-1.5 text-[11px]">
+                <button
+                  key={item.name}
+                  onClick={() => handlePieClick({ name: item.name })}
+                  className="flex items-center gap-1.5 rounded-md px-1 py-0.5 text-[11px] text-left hover:bg-secondary/60 transition-colors"
+                >
                   <span
                     className="h-2.5 w-2.5 rounded-sm shrink-0"
                     style={{ background: CHART_COLORS[i % CHART_COLORS.length] }}
                   />
                   <span className="truncate">{item.emoji} {item.name}</span>
                   <span className="ml-auto font-semibold">{pct.toFixed(0)}%</span>
-                </div>
+                </button>
               );
             })}
           </div>
