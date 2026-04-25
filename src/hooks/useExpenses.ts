@@ -195,6 +195,48 @@ export function useExpenses() {
   const totalOwed = useMemo(() => pendingBorrowings.filter(b => b.type === "lent").reduce((s, b) => s + b.amount, 0), [pendingBorrowings]);
   const totalIOwe = useMemo(() => pendingBorrowings.filter(b => b.type === "owed").reduce((s, b) => s + b.amount, 0), [pendingBorrowings]);
 
+  // ---- Incomes ----
+  const addIncome = useCallback(async (amount: number, source: string, note?: string, receivedDate?: Date) => {
+    if (!user) return;
+    const date = (receivedDate ?? new Date()).toISOString();
+    const { data } = await supabase.from("incomes" as any).insert({
+      user_id: user.id, amount, source, note, received_date: date,
+    } as any).select().single();
+    if (data) {
+      setIncomes(prev => {
+        const next = [rowToIncome(data), ...prev];
+        next.sort((a, b) => b.receivedOn - a.receivedOn);
+        return next;
+      });
+    }
+  }, [user]);
+
+  const updateIncome = useCallback(async (
+    id: string,
+    updates: { amount?: number; source?: string; note?: string; receivedDate?: Date },
+  ) => {
+    const payload: any = {};
+    if (updates.amount !== undefined) payload.amount = updates.amount;
+    if (updates.source !== undefined) payload.source = updates.source;
+    if (updates.note !== undefined) payload.note = updates.note;
+    if (updates.receivedDate !== undefined) payload.received_date = updates.receivedDate.toISOString();
+    const { data } = await supabase.from("incomes" as any).update(payload).eq("id", id).select().single();
+    if (data) {
+      setIncomes(prev => {
+        const next = prev.map(i => i.id === id ? rowToIncome(data) : i);
+        next.sort((a, b) => b.receivedOn - a.receivedOn);
+        return next;
+      });
+    }
+  }, []);
+
+  const removeIncome = useCallback(async (id: string) => {
+    await supabase.from("incomes" as any).delete().eq("id", id);
+    setIncomes(prev => prev.filter(i => i.id !== id));
+  }, []);
+
+  const totalReceived = useMemo(() => incomes.reduce((s, i) => s + i.amount, 0), [incomes]);
+
   return {
     loading, expenses, currency, currencyCode, changeCurrency,
     addExpense, updateExpense, removeExpense,
@@ -203,5 +245,6 @@ export function useExpenses() {
     username, setUsername,
     borrowings, addBorrowing, settleBorrowing, removeBorrowing,
     pendingBorrowings, totalOwed, totalIOwe,
+    incomes, addIncome, updateIncome, removeIncome, totalReceived,
   };
 }
