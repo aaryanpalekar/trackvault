@@ -182,10 +182,17 @@ export function useExpenses() {
     return days.map((name, i) => {
       const dayStart = new Date(monday); dayStart.setDate(monday.getDate() + i);
       const dayEnd = new Date(dayStart); dayEnd.setDate(dayStart.getDate() + 1);
-      const total = weekExpenses
-        .filter(e => e.timestamp >= dayStart.getTime() && e.timestamp < dayEnd.getTime())
-        .reduce((s, e) => s + e.amount, 0);
-      return { name, total, isToday: i === (dow === 0 ? 6 : dow - 1) };
+      const dayExpenses = weekExpenses.filter(
+        e => e.timestamp >= dayStart.getTime() && e.timestamp < dayEnd.getTime()
+      );
+      const total = dayExpenses.reduce((s, e) => s + e.amount, 0);
+      return {
+        name,
+        total,
+        isToday: i === (dow === 0 ? 6 : dow - 1),
+        date: dayStart,
+        count: dayExpenses.length,
+      };
     });
   }, [weekExpenses]);
 
