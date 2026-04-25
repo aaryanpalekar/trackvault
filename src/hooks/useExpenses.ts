@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { Expense, Borrowing, PaymentMethod, BorrowingType } from "@/lib/types";
+import { Expense, Borrowing, PaymentMethod, BorrowingType, Income } from "@/lib/types";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { getCurrency } from "@/lib/currencies";
@@ -16,10 +16,21 @@ function rowToExpense(e: any): Expense {
   };
 }
 
+function rowToIncome(i: any): Income {
+  return {
+    id: i.id,
+    amount: Number(i.amount),
+    source: i.source,
+    note: i.note ?? undefined,
+    receivedOn: new Date(i.received_date ?? i.created_at).getTime(),
+  };
+}
+
 export function useExpenses() {
   const { user } = useAuth();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [borrowings, setBorrowings] = useState<Borrowing[]>([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
   const [currencyCode, setCurrencyCode] = useState("INR");
   const [username, setUsernameState] = useState("");
   const [loading, setLoading] = useState(true);
@@ -34,7 +45,8 @@ export function useExpenses() {
       supabase.from("borrowings").select("*").order("created_at", { ascending: false }),
       supabase.from("user_preferences").select("*").single(),
       supabase.from("profiles").select("*").eq("user_id", user.id).single(),
-    ]).then(([expRes, borRes, prefRes, profRes]) => {
+      supabase.from("incomes" as any).select("*").order("received_date", { ascending: false }),
+    ]).then(([expRes, borRes, prefRes, profRes, incRes]) => {
       if (expRes.data) setExpenses(expRes.data.map(rowToExpense));
       if (borRes.data) {
         setBorrowings(borRes.data.map(b => ({
@@ -46,6 +58,7 @@ export function useExpenses() {
       }
       if (prefRes.data) setCurrencyCode(prefRes.data.currency_code);
       if (profRes.data) setUsernameState(profRes.data.display_name);
+      if (incRes.data) setIncomes((incRes.data as any[]).map(rowToIncome));
       setLoading(false);
     });
   }, [user]);
