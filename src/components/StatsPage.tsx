@@ -6,7 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from "recharts";
 import {
-  TrendingDown, CreditCard, Tag, Calendar as CalendarIcon, ChevronLeft, ChevronRight,
+  TrendingDown, CreditCard, Tag, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ import {
   startOfYear, endOfYear, addMonths, subMonths, getDaysInMonth,
 } from "date-fns";
 import ExpenseList from "@/components/ExpenseList";
+import DayDetailDrawer from "@/components/DayDetailDrawer";
 
 type View = "day" | "month" | "year";
 
@@ -44,6 +45,54 @@ export default function StatsPage({ allExpenses, currency, onEdit, onDelete }: S
   const [view, setView] = useState<View>("month");
   const [anchorDate, setAnchorDate] = useState<Date>(new Date());
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [drawerDate, setDrawerDate] = useState<Date | null>(null);
+  const [drawerCategory, setDrawerCategory] = useState<string | undefined>(undefined);
+
+  const openDrawer = (d: Date, category?: string) => {
+    setDrawerDate(d);
+    setDrawerCategory(category);
+  };
+  const closeDrawer = () => { setDrawerDate(null); setDrawerCategory(undefined); };
+
+  // For "day" view: clicking a category opens that day filtered to that category.
+  // For "month" view: clicking a day opens that day.
+  // For "year" view: clicking a month jumps to that month.
+  const handleBarClick = (entry: any) => {
+    if (!entry || !entry.activePayload?.[0]?.payload) return;
+    const payload = entry.activePayload[0].payload;
+    if (view === "day") {
+      // hourly chart: open the day's full detail
+      openDrawer(anchorDate);
+    } else if (view === "month") {
+      const day = parseInt(payload.name, 10);
+      if (!isNaN(day)) {
+        const d = new Date(anchorDate.getFullYear(), anchorDate.getMonth(), day);
+        openDrawer(d);
+      }
+    } else {
+      // year: jump anchor to that month
+      const monthIdx = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].indexOf(payload.name);
+      if (monthIdx >= 0) {
+        setAnchorDate(new Date(anchorDate.getFullYear(), monthIdx, 1));
+        setView("month");
+      }
+    }
+  };
+
+  const handlePieClick = (entry: any) => {
+    if (!entry?.name) return;
+    // Open drawer for a representative date filtered to this category
+    if (view === "day") {
+      openDrawer(anchorDate, entry.name);
+    } else {
+      // For month/year, find the most recent expense in that category and open its day
+      const match = allExpenses.find(e =>
+        e.category === entry.name &&
+        e.timestamp >= rangeStart.getTime() && e.timestamp <= rangeEnd.getTime()
+      );
+      if (match) openDrawer(new Date(match.timestamp), entry.name);
+    }
+  };
 
   const { rangeStart, rangeEnd, label } = useMemo(() => {
     if (view === "day") {
@@ -278,6 +327,8 @@ export default function StatsPage({ allExpenses, currency, onEdit, onDelete }: S
                   paddingAngle={2}
                   stroke="hsl(var(--card))"
                   strokeWidth={2}
+                  onClick={handlePieClick}
+                  className="cursor-pointer"
                 >
                   {categoryBreakdown.map((_, i) => (
                     <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
@@ -291,38 +342,107 @@ export default function StatsPage({ allExpenses, currency, onEdit, onDelete }: S
                     color: "hsl(var(--popover-foreground))",
                     fontSize: "12px",
                   }}
-                  formatter={(v: number) => [`${currency.symbol}${v.toLocaleString()}`, "Spent"]}
+                  formatter={(v: number, _n, p: any) => [
+                    `${currency.symbol}${v.toLocaleString()}`,
+                    `${p?.payload?.emoji ?? ""} ${p?.payload?.name ?? "Spent"}`,
+                  ]}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
+          <p className="mt-1 text-center text-[10px] text-muted-foreground">Tap a slice to see items</p>
           <div className="mt-2 grid grid-cols-2 gap-1.5">
             {categoryBreakdown.map((item, i) => {
               const pct = periodTotal > 0 ? (item.value / periodTotal) * 100 : 0;
               return (
-                <div key={item.name} className="flex items-center gap-1.5 text-[11px]">
+                <button
+                  key={item.name}
+                  onClick={() => handlePieClick({ name: item.name })}
+                  className="flex items-center gap-1.5 rounded-md px-1 py-0.5 text-[11px] text-left hover:bg-secondary/60 transition-colors"
+                >
                   <span
                     className="h-2.5 w-2.5 rounded-sm shrink-0"
                     style={{ background: CHART_COLORS[i % CHART_COLORS.length] }}
                   />
                   <span className="truncate">{item.emoji} {item.name}</span>
                   <span className="ml-auto font-semibold">{pct.toFixed(0)}%</span>
-                </div>
+                </button>
               );
             })}
           </div>
         </div>
       )}
 
-      {/* Bar chart - time distribution */}
-      {periodTotal > 0 && (
+      {/* Time distribution: hourly timeline for day view, bar chart otherwise */}
+      {periodTotal > 0 && view === "day" && (
         <div className="mb-4 rounded-2xl bg-card p-4 shadow-card">
-          <h3 className="mb-3 font-heading text-sm font-semibold">
-            {view === "day" ? "Hourly spend" : view === "month" ? "Daily spend" : "Monthly spend"}
-          </h3>
+          <div className="mb-3 flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <h3 className="font-heading text-sm font-semibold">Hourly timeline</h3>
+          </div>
+          <div className="space-y-1.5">
+            {filteredExpenses.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No transactions yet today.</p>
+            ) : (
+              filteredExpenses
+                .slice()
+                .sort((a, b) => a.timestamp - b.timestamp)
+                .map(exp => {
+                  const cat = CATEGORIES.find(c => c.label === exp.category);
+                  const pm = PAYMENT_METHODS.find(p => p.value === exp.paymentMethod);
+                  const pct = periodTotal > 0 ? (exp.amount / periodTotal) * 100 : 0;
+                  return (
+                    <button
+                      key={exp.id}
+                      onClick={() => onEdit?.(exp)}
+                      className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors hover:bg-secondary/60"
+                    >
+                      <div className="w-12 shrink-0 text-right">
+                        <p className="text-[11px] font-mono font-semibold text-foreground">
+                          {format(new Date(exp.timestamp), "HH:mm")}
+                        </p>
+                      </div>
+                      <div className="relative flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">{cat?.emoji ?? "📦"}</span>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-xs font-semibold">
+                              {exp.customName || exp.category}
+                              {exp.customName && (
+                                <span className="ml-1 text-[9px] font-normal text-muted-foreground">· {exp.category}</span>
+                              )}
+                            </p>
+                            <p className="truncate text-[10px] text-muted-foreground">
+                              {pm?.icon} {pm?.label}
+                            </p>
+                          </div>
+                          <p className="shrink-0 text-xs font-bold text-destructive">
+                            -{currency.symbol}{exp.amount.toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="mt-1 h-1 rounded-full bg-secondary">
+                          <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.max(pct, 4)}%` }} />
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })
+            )}
+          </div>
+        </div>
+      )}
+
+      {periodTotal > 0 && view !== "day" && (
+        <div className="mb-4 rounded-2xl bg-card p-4 shadow-card">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="font-heading text-sm font-semibold">
+              {view === "month" ? "Daily spend" : "Monthly spend"}
+            </h3>
+            <span className="text-[10px] text-muted-foreground">Tap a bar for details</span>
+          </div>
           <div className="h-44">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData} barCategoryGap="15%">
+              <BarChart data={barData} barCategoryGap="15%" onClick={handleBarClick}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis
                   dataKey="name"
@@ -346,9 +466,12 @@ export default function StatsPage({ allExpenses, currency, onEdit, onDelete }: S
                     color: "hsl(var(--popover-foreground))",
                     fontSize: "12px",
                   }}
+                  labelFormatter={(l) =>
+                    view === "month" ? `Day ${l}, ${format(anchorDate, "MMM yyyy")}` : `${l} ${anchorDate.getFullYear()}`
+                  }
                   formatter={(v: number) => [`${currency.symbol}${v.toLocaleString()}`, "Spent"]}
                 />
-                <Bar dataKey="total" radius={[6, 6, 0, 0]} fill="hsl(var(--primary))" />
+                <Bar dataKey="total" radius={[6, 6, 0, 0]} fill="hsl(var(--primary))" className="cursor-pointer" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -398,6 +521,16 @@ export default function StatsPage({ allExpenses, currency, onEdit, onDelete }: S
           emptyMessage="No expenses in this period"
         />
       </div>
+
+      <DayDetailDrawer
+        open={drawerDate !== null}
+        date={drawerDate}
+        expenses={allExpenses}
+        currency={currency}
+        onClose={closeDrawer}
+        onEdit={(exp) => { closeDrawer(); onEdit?.(exp); }}
+        filterCategory={drawerCategory}
+      />
     </div>
   );
 }

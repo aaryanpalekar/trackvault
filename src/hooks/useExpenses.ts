@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { Expense, Borrowing, PaymentMethod, BorrowingType } from "@/lib/types";
+import { Expense, Borrowing, PaymentMethod, BorrowingType, Income } from "@/lib/types";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { getCurrency } from "@/lib/currencies";
@@ -16,10 +16,21 @@ function rowToExpense(e: any): Expense {
   };
 }
 
+function rowToIncome(i: any): Income {
+  return {
+    id: i.id,
+    amount: Number(i.amount),
+    source: i.source,
+    note: i.note ?? undefined,
+    receivedOn: new Date(i.received_date ?? i.created_at).getTime(),
+  };
+}
+
 export function useExpenses() {
   const { user } = useAuth();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [borrowings, setBorrowings] = useState<Borrowing[]>([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
   const [currencyCode, setCurrencyCode] = useState("INR");
   const [username, setUsernameState] = useState("");
   const [loading, setLoading] = useState(true);
@@ -34,7 +45,8 @@ export function useExpenses() {
       supabase.from("borrowings").select("*").order("created_at", { ascending: false }),
       supabase.from("user_preferences").select("*").single(),
       supabase.from("profiles").select("*").eq("user_id", user.id).single(),
-    ]).then(([expRes, borRes, prefRes, profRes]) => {
+      supabase.from("incomes" as any).select("*").order("received_date", { ascending: false }),
+    ]).then(([expRes, borRes, prefRes, profRes, incRes]) => {
       if (expRes.data) setExpenses(expRes.data.map(rowToExpense));
       if (borRes.data) {
         setBorrowings(borRes.data.map(b => ({
@@ -46,6 +58,7 @@ export function useExpenses() {
       }
       if (prefRes.data) setCurrencyCode(prefRes.data.currency_code);
       if (profRes.data) setUsernameState(profRes.data.display_name);
+      if (incRes.data) setIncomes((incRes.data as any[]).map(rowToIncome));
       setLoading(false);
     });
   }, [user]);
@@ -169,10 +182,17 @@ export function useExpenses() {
     return days.map((name, i) => {
       const dayStart = new Date(monday); dayStart.setDate(monday.getDate() + i);
       const dayEnd = new Date(dayStart); dayEnd.setDate(dayStart.getDate() + 1);
-      const total = weekExpenses
-        .filter(e => e.timestamp >= dayStart.getTime() && e.timestamp < dayEnd.getTime())
-        .reduce((s, e) => s + e.amount, 0);
-      return { name, total, isToday: i === (dow === 0 ? 6 : dow - 1) };
+      const dayExpenses = weekExpenses.filter(
+        e => e.timestamp >= dayStart.getTime() && e.timestamp < dayEnd.getTime()
+      );
+      const total = dayExpenses.reduce((s, e) => s + e.amount, 0);
+      return {
+        name,
+        total,
+        isToday: i === (dow === 0 ? 6 : dow - 1),
+        date: dayStart,
+        count: dayExpenses.length,
+      };
     });
   }, [weekExpenses]);
 
@@ -182,6 +202,48 @@ export function useExpenses() {
   const totalOwed = useMemo(() => pendingBorrowings.filter(b => b.type === "lent").reduce((s, b) => s + b.amount, 0), [pendingBorrowings]);
   const totalIOwe = useMemo(() => pendingBorrowings.filter(b => b.type === "owed").reduce((s, b) => s + b.amount, 0), [pendingBorrowings]);
 
+  // ---- Incomes ----
+  const addIncome = useCallback(async (amount: number, source: string, note?: string, receivedDate?: Date) => {
+    if (!user) return;
+    const date = (receivedDate ?? new Date()).toISOString();
+    const { data } = await supabase.from("incomes" as any).insert({
+      user_id: user.id, amount, source, note, received_date: date,
+    } as any).select().single();
+    if (data) {
+      setIncomes(prev => {
+        const next = [rowToIncome(data), ...prev];
+        next.sort((a, b) => b.receivedOn - a.receivedOn);
+        return next;
+      });
+    }
+  }, [user]);
+
+  const updateIncome = useCallback(async (
+    id: string,
+    updates: { amount?: number; source?: string; note?: string; receivedDate?: Date },
+  ) => {
+    const payload: any = {};
+    if (updates.amount !== undefined) payload.amount = updates.amount;
+    if (updates.source !== undefined) payload.source = updates.source;
+    if (updates.note !== undefined) payload.note = updates.note;
+    if (updates.receivedDate !== undefined) payload.received_date = updates.receivedDate.toISOString();
+    const { data } = await supabase.from("incomes" as any).update(payload).eq("id", id).select().single();
+    if (data) {
+      setIncomes(prev => {
+        const next = prev.map(i => i.id === id ? rowToIncome(data) : i);
+        next.sort((a, b) => b.receivedOn - a.receivedOn);
+        return next;
+      });
+    }
+  }, []);
+
+  const removeIncome = useCallback(async (id: string) => {
+    await supabase.from("incomes" as any).delete().eq("id", id);
+    setIncomes(prev => prev.filter(i => i.id !== id));
+  }, []);
+
+  const totalReceived = useMemo(() => incomes.reduce((s, i) => s + i.amount, 0), [incomes]);
+
   return {
     loading, expenses, currency, currencyCode, changeCurrency,
     addExpense, updateExpense, removeExpense,
@@ -190,5 +252,6 @@ export function useExpenses() {
     username, setUsername,
     borrowings, addBorrowing, settleBorrowing, removeBorrowing,
     pendingBorrowings, totalOwed, totalIOwe,
+    incomes, addIncome, updateIncome, removeIncome, totalReceived,
   };
 }

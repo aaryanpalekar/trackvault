@@ -43,6 +43,7 @@ export default function AddExpenseSheet({ open, onClose, onAdd, onUpdate, curren
   const [note, setNote] = useState("");
   const [date, setDate] = useState<Date>(new Date());
   const [customName, setCustomName] = useState("");
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -132,22 +133,32 @@ export default function AddExpenseSheet({ open, onClose, onAdd, onUpdate, curren
         {/* Date */}
         <div className="mb-4">
           <p className="mb-2 text-xs font-medium text-muted-foreground">Date</p>
-          <Popover>
+          <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 className="w-full justify-start rounded-xl text-left font-normal"
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {format(date, "EEE, dd MMM yyyy")}
+                {format(date, "EEE, dd/MM/yyyy")}
                 {isToday && <span className="ml-auto text-xs text-primary font-semibold">Today</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
+              <div className="flex items-center justify-between border-b border-border px-3 py-2">
+                <span className="text-xs font-semibold text-muted-foreground">Pick a date</span>
+                <button
+                  onClick={() => setDatePickerOpen(false)}
+                  className="rounded-full p-1 hover:bg-secondary"
+                  aria-label="Close calendar"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
               <Calendar
                 mode="single"
                 selected={date}
-                onSelect={(d) => d && setDate(d)}
+                onSelect={(d) => { if (d) { setDate(d); setDatePickerOpen(false); } }}
                 disabled={(d) => d > new Date()}
                 initialFocus
                 className={cn("p-3 pointer-events-auto")}

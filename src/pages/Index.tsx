@@ -8,10 +8,14 @@ import BottomNav from "@/components/BottomNav";
 import StatsPage from "@/components/StatsPage";
 import ProfilePage from "@/components/ProfilePage";
 import DuesPage from "@/components/DuesPage";
+import IncomePage from "@/components/IncomePage";
 import AuthPage from "@/components/AuthPage";
+import DayDetailDrawer from "@/components/DayDetailDrawer";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useAuth } from "@/hooks/useAuth";
 import { Expense } from "@/lib/types";
+
+type Tab = "home" | "stats" | "income" | "dues" | "profile";
 
 function getGreeting(): string {
   const h = new Date().getHours();
@@ -24,9 +28,10 @@ function getGreeting(): string {
 
 const HomePage = () => {
   const { user, loading: authLoading, signOut } = useAuth();
-  const [tab, setTab] = useState<"home" | "stats" | "dues" | "profile">("home");
+  const [tab, setTab] = useState<Tab>("home");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [drawerDate, setDrawerDate] = useState<Date | null>(null);
   const {
     loading, currency, currencyCode, changeCurrency,
     addExpense, updateExpense, removeExpense, expenses,
@@ -35,6 +40,7 @@ const HomePage = () => {
     username, setUsername,
     borrowings, addBorrowing, settleBorrowing, removeBorrowing,
     pendingBorrowings, totalOwed, totalIOwe,
+    incomes, addIncome, updateIncome, removeIncome, totalReceived,
   } = useExpenses();
 
   const openAdd = () => { setEditingExpense(null); setSheetOpen(true); };
@@ -89,7 +95,18 @@ const HomePage = () => {
                 <p className="font-heading text-xl font-bold">{currency.symbol}{weekTotal.toLocaleString()}</p>
                 <p className="text-[10px] opacity-70">{weekExpenses.length} txns</p>
               </div>
-              {totalOwed > 0 || totalIOwe > 0 ? (
+              {totalReceived > 0 ? (
+                <div
+                  className="rounded-2xl bg-gradient-to-br from-accent to-accent/80 p-4 text-accent-foreground shadow-elevated cursor-pointer"
+                  onClick={() => setTab("income")}
+                >
+                  <p className="text-[10px] opacity-80">Received</p>
+                  <p className="font-heading text-xl font-bold">
+                    +{currency.symbol}{totalReceived.toLocaleString()}
+                  </p>
+                  <p className="text-[10px] opacity-70">{incomes.length} entries</p>
+                </div>
+              ) : totalOwed > 0 || totalIOwe > 0 ? (
                 <div
                   className="rounded-2xl bg-gradient-to-br from-accent to-accent/80 p-4 text-accent-foreground shadow-elevated cursor-pointer"
                   onClick={() => setTab("dues")}
@@ -112,7 +129,7 @@ const HomePage = () => {
             </div>
 
             <div className="mb-4">
-              <WeeklyChart data={weeklyData} currency={currency} />
+              <WeeklyChart data={weeklyData} currency={currency} onSelectDay={setDrawerDate} />
             </div>
 
             <div className="mb-4">
@@ -141,6 +158,16 @@ const HomePage = () => {
             currency={currency}
             onEdit={openEdit}
             onDelete={removeExpense}
+          />
+        )}
+
+        {tab === "income" && (
+          <IncomePage
+            incomes={incomes}
+            currency={currency}
+            onAdd={addIncome}
+            onUpdate={updateIncome}
+            onDelete={removeIncome}
           />
         )}
 
@@ -175,6 +202,15 @@ const HomePage = () => {
         onUpdate={updateExpense}
         currency={currency}
         editing={editingExpense}
+      />
+
+      <DayDetailDrawer
+        open={drawerDate !== null}
+        date={drawerDate}
+        expenses={expenses}
+        currency={currency}
+        onClose={() => setDrawerDate(null)}
+        onEdit={(exp) => { setDrawerDate(null); openEdit(exp); }}
       />
 
       <BottomNav active={tab} onNavigate={setTab} />
