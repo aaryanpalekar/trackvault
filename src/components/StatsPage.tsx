@@ -45,6 +45,54 @@ export default function StatsPage({ allExpenses, currency, onEdit, onDelete }: S
   const [view, setView] = useState<View>("month");
   const [anchorDate, setAnchorDate] = useState<Date>(new Date());
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [drawerDate, setDrawerDate] = useState<Date | null>(null);
+  const [drawerCategory, setDrawerCategory] = useState<string | undefined>(undefined);
+
+  const openDrawer = (d: Date, category?: string) => {
+    setDrawerDate(d);
+    setDrawerCategory(category);
+  };
+  const closeDrawer = () => { setDrawerDate(null); setDrawerCategory(undefined); };
+
+  // For "day" view: clicking a category opens that day filtered to that category.
+  // For "month" view: clicking a day opens that day.
+  // For "year" view: clicking a month jumps to that month.
+  const handleBarClick = (entry: any) => {
+    if (!entry || !entry.activePayload?.[0]?.payload) return;
+    const payload = entry.activePayload[0].payload;
+    if (view === "day") {
+      // hourly chart: open the day's full detail
+      openDrawer(anchorDate);
+    } else if (view === "month") {
+      const day = parseInt(payload.name, 10);
+      if (!isNaN(day)) {
+        const d = new Date(anchorDate.getFullYear(), anchorDate.getMonth(), day);
+        openDrawer(d);
+      }
+    } else {
+      // year: jump anchor to that month
+      const monthIdx = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].indexOf(payload.name);
+      if (monthIdx >= 0) {
+        setAnchorDate(new Date(anchorDate.getFullYear(), monthIdx, 1));
+        setView("month");
+      }
+    }
+  };
+
+  const handlePieClick = (entry: any) => {
+    if (!entry?.name) return;
+    // Open drawer for a representative date filtered to this category
+    if (view === "day") {
+      openDrawer(anchorDate, entry.name);
+    } else {
+      // For month/year, find the most recent expense in that category and open its day
+      const match = allExpenses.find(e =>
+        e.category === entry.name &&
+        e.timestamp >= rangeStart.getTime() && e.timestamp <= rangeEnd.getTime()
+      );
+      if (match) openDrawer(new Date(match.timestamp), entry.name);
+    }
+  };
 
   const { rangeStart, rangeEnd, label } = useMemo(() => {
     if (view === "day") {
