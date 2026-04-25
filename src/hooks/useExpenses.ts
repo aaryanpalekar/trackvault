@@ -4,6 +4,18 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { getCurrency } from "@/lib/currencies";
 
+function rowToExpense(e: any): Expense {
+  return {
+    id: e.id,
+    amount: Number(e.amount),
+    category: e.category,
+    paymentMethod: e.payment_method as PaymentMethod,
+    timestamp: new Date(e.expense_date ?? e.created_at).getTime(),
+    note: e.note ?? undefined,
+    customName: e.custom_name ?? undefined,
+  };
+}
+
 export function useExpenses() {
   const { user } = useAuth();
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -18,18 +30,12 @@ export function useExpenses() {
     if (!user) return;
     setLoading(true);
     Promise.all([
-      supabase.from("expenses").select("*").order("created_at", { ascending: false }),
+      supabase.from("expenses").select("*").order("expense_date", { ascending: false }),
       supabase.from("borrowings").select("*").order("created_at", { ascending: false }),
       supabase.from("user_preferences").select("*").single(),
       supabase.from("profiles").select("*").eq("user_id", user.id).single(),
     ]).then(([expRes, borRes, prefRes, profRes]) => {
-      if (expRes.data) {
-        setExpenses(expRes.data.map(e => ({
-          id: e.id, amount: Number(e.amount), category: e.category,
-          paymentMethod: e.payment_method as PaymentMethod, timestamp: new Date(e.created_at).getTime(),
-          note: e.note ?? undefined,
-        })));
-      }
+      if (expRes.data) setExpenses(expRes.data.map(rowToExpense));
       if (borRes.data) {
         setBorrowings(borRes.data.map(b => ({
           id: b.id, personName: b.person_name, amount: Number(b.amount),
@@ -44,19 +50,54 @@ export function useExpenses() {
     });
   }, [user]);
 
-  const addExpense = useCallback(async (amount: number, category: string, paymentMethod: PaymentMethod, note?: string) => {
+  const addExpense = useCallback(async (
+    amount: number,
+    category: string,
+    paymentMethod: PaymentMethod,
+    note?: string,
+    expenseDate?: Date,
+    customName?: string,
+  ) => {
     if (!user) return;
+    const date = (expenseDate ?? new Date()).toISOString();
     const { data } = await supabase.from("expenses").insert({
-      user_id: user.id, amount, category, payment_method: paymentMethod, note,
-    }).select().single();
+      user_id: user.id,
+      amount,
+      category,
+      payment_method: paymentMethod,
+      note,
+      expense_date: date,
+      custom_name: customName,
+    } as any).select().single();
     if (data) {
-      setExpenses(prev => [{
-        id: data.id, amount: Number(data.amount), category: data.category,
-        paymentMethod: data.payment_method as PaymentMethod, timestamp: new Date(data.created_at).getTime(),
-        note: data.note ?? undefined,
-      }, ...prev]);
+      setExpenses(prev => {
+        const next = [rowToExpense(data), ...prev];
+        next.sort((a, b) => b.timestamp - a.timestamp);
+        return next;
+      });
     }
   }, [user]);
+
+  const updateExpense = useCallback(async (
+    id: string,
+    updates: { amount?: number; category?: string; paymentMethod?: PaymentMethod; note?: string; expenseDate?: Date; customName?: string },
+  ) => {
+    const payload: any = {};
+    if (updates.amount !== undefined) payload.amount = updates.amount;
+    if (updates.category !== undefined) payload.category = updates.category;
+    if (updates.paymentMethod !== undefined) payload.payment_method = updates.paymentMethod;
+    if (updates.note !== undefined) payload.note = updates.note;
+    if (updates.expenseDate !== undefined) payload.expense_date = updates.expenseDate.toISOString();
+    if (updates.customName !== undefined) payload.custom_name = updates.customName;
+    const { data } = await supabase.from("expenses").update(payload).eq("id", id).select().single();
+    if (data) {
+      setExpenses(prev => {
+        const next = prev.map(e => e.id === id ? rowToExpense(data) : e);
+        next.sort((a, b) => b.timestamp - a.timestamp);
+        return next;
+      });
+    }
+  }, []);
 
   const removeExpense = useCallback(async (id: string) => {
     await supabase.from("expenses").delete().eq("id", id);
@@ -103,7 +144,8 @@ export function useExpenses() {
 
   const todayExpenses = useMemo(() => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
-    return expenses.filter(e => e.timestamp >= today.getTime());
+    const tomorrow = today.getTime() + 24 * 60 * 60 * 1000;
+    return expenses.filter(e => e.timestamp >= today.getTime() && e.timestamp < tomorrow);
   }, [expenses]);
 
   const todayTotal = useMemo(() => todayExpenses.reduce((s, e) => s + e.amount, 0), [todayExpenses]);
@@ -142,7 +184,7 @@ export function useExpenses() {
 
   return {
     loading, expenses, currency, currencyCode, changeCurrency,
-    addExpense, removeExpense,
+    addExpense, updateExpense, removeExpense,
     todayExpenses, todayTotal,
     weekExpenses, weeklyData, weekTotal,
     username, setUsername,
