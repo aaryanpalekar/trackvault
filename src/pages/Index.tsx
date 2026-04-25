@@ -11,6 +11,7 @@ import DuesPage from "@/components/DuesPage";
 import AuthPage from "@/components/AuthPage";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useAuth } from "@/hooks/useAuth";
+import { Expense } from "@/lib/types";
 
 function getGreeting(): string {
   const h = new Date().getHours();
@@ -25,15 +26,20 @@ const HomePage = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const [tab, setTab] = useState<"home" | "stats" | "dues" | "profile">("home");
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const {
     loading, currency, currencyCode, changeCurrency,
-    addExpense, removeExpense, expenses,
+    addExpense, updateExpense, removeExpense, expenses,
     todayExpenses, todayTotal,
     weeklyData, weekTotal, weekExpenses,
     username, setUsername,
     borrowings, addBorrowing, settleBorrowing, removeBorrowing,
     pendingBorrowings, totalOwed, totalIOwe,
   } = useExpenses();
+
+  const openAdd = () => { setEditingExpense(null); setSheetOpen(true); };
+  const openEdit = (exp: Expense) => { setEditingExpense(exp); setSheetOpen(true); };
+  const closeSheet = () => { setSheetOpen(false); setEditingExpense(null); };
 
   if (authLoading) {
     return (
@@ -111,28 +117,31 @@ const HomePage = () => {
 
             <div className="mb-4">
               <h2 className="mb-2 font-heading text-sm font-semibold">Today</h2>
-              <ExpenseList expenses={todayExpenses} currency={currency} onDelete={removeExpense} />
+              <ExpenseList
+                expenses={todayExpenses}
+                currency={currency}
+                onDelete={removeExpense}
+                onEdit={openEdit}
+              />
             </div>
 
             <Button
-              onClick={() => setSheetOpen(true)}
+              onClick={openAdd}
               className="fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full shadow-elevated md:right-[calc(50%-224px+16px)]"
               size="icon"
             >
               <Plus className="h-6 w-6" />
             </Button>
-
-            <AddExpenseSheet
-              open={sheetOpen}
-              onClose={() => setSheetOpen(false)}
-              onAdd={addExpense}
-              currency={currency}
-            />
           </div>
         )}
 
         {tab === "stats" && (
-          <StatsPage weeklyData={weeklyData} allExpenses={expenses} currency={currency} />
+          <StatsPage
+            allExpenses={expenses}
+            currency={currency}
+            onEdit={openEdit}
+            onDelete={removeExpense}
+          />
         )}
 
         {tab === "dues" && (
@@ -158,6 +167,16 @@ const HomePage = () => {
           />
         )}
       </div>
+
+      <AddExpenseSheet
+        open={sheetOpen}
+        onClose={closeSheet}
+        onAdd={addExpense}
+        onUpdate={updateExpense}
+        currency={currency}
+        editing={editingExpense}
+      />
+
       <BottomNav active={tab} onNavigate={setTab} />
     </div>
   );
