@@ -521,6 +521,16 @@ export default function StatsPage({ allExpenses, currency, onEdit, onDelete }: S
           emptyMessage="No expenses in this period"
         />
       </div>
+
+      <DayDetailDrawer
+        open={drawerDate !== null}
+        date={drawerDate}
+        expenses={allExpenses}
+        currency={currency}
+        onClose={closeDrawer}
+        onEdit={(exp) => { closeDrawer(); onEdit?.(exp); }}
+        filterCategory={drawerCategory}
+      />
     </div>
   );
 }
