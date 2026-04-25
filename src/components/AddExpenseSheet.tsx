@@ -1,43 +1,102 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CATEGORIES, PAYMENT_METHODS, PaymentMethod } from "@/lib/types";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CATEGORIES, PAYMENT_METHODS, PaymentMethod, Expense } from "@/lib/types";
 import { Currency } from "@/lib/currencies";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Calendar as CalendarIcon, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 interface AddExpenseSheetProps {
   open: boolean;
   onClose: () => void;
-  onAdd: (amount: number, category: string, paymentMethod: PaymentMethod, note?: string) => void;
+  onAdd: (
+    amount: number,
+    category: string,
+    paymentMethod: PaymentMethod,
+    note?: string,
+    expenseDate?: Date,
+    customName?: string,
+  ) => void;
+  onUpdate?: (
+    id: string,
+    updates: {
+      amount?: number;
+      category?: string;
+      paymentMethod?: PaymentMethod;
+      note?: string;
+      expenseDate?: Date;
+      customName?: string;
+    },
+  ) => void;
   currency: Currency;
+  /** When provided, the sheet is in edit mode */
+  editing?: Expense | null;
 }
 
-export default function AddExpenseSheet({ open, onClose, onAdd, currency }: AddExpenseSheetProps) {
+export default function AddExpenseSheet({ open, onClose, onAdd, onUpdate, currency, editing }: AddExpenseSheetProps) {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<string>(CATEGORIES[0].label);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("upi");
   const [note, setNote] = useState("");
+  const [date, setDate] = useState<Date>(new Date());
+  const [customName, setCustomName] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      if (editing) {
+        setAmount(String(editing.amount));
+        setCategory(editing.category);
+        setPaymentMethod(editing.paymentMethod);
+        setNote(editing.note ?? "");
+        setDate(new Date(editing.timestamp));
+        setCustomName(editing.customName ?? "");
+      } else {
+        setAmount("");
+        setCategory(CATEGORIES[0].label);
+        setPaymentMethod("upi");
+        setNote("");
+        setDate(new Date());
+        setCustomName("");
+      }
+    }
+  }, [open, editing]);
 
   const handleQuickAmount = (val: number) => setAmount(String(val));
 
   const handleSubmit = () => {
     const num = parseFloat(amount);
     if (!num || num <= 0) return;
-    onAdd(num, category, paymentMethod, note || undefined);
-    setAmount("");
-    setNote("");
+    const isOther = category === "Other";
+    const finalCustom = isOther ? customName.trim() || undefined : undefined;
+    if (editing && onUpdate) {
+      onUpdate(editing.id, {
+        amount: num,
+        category,
+        paymentMethod,
+        note: note || undefined,
+        expenseDate: date,
+        customName: finalCustom,
+      });
+    } else {
+      onAdd(num, category, paymentMethod, note || undefined, date, finalCustom);
+    }
     onClose();
   };
 
   if (!open) return null;
 
+  const isToday =
+    date.toDateString() === new Date().toDateString();
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md max-h-[85vh] overflow-y-auto animate-slide-up rounded-t-3xl bg-card p-6 pb-24 shadow-elevated">
+      <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto animate-slide-up rounded-t-3xl bg-card p-6 pb-24 shadow-elevated">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-heading text-lg font-bold">Add Expense</h2>
+          <h2 className="font-heading text-lg font-bold">{editing ? "Edit Expense" : "Add Expense"}</h2>
           <button onClick={onClose} className="rounded-full p-1 hover:bg-secondary">
             <X className="h-5 w-5 text-muted-foreground" />
           </button>
@@ -70,6 +129,33 @@ export default function AddExpenseSheet({ open, onClose, onAdd, currency }: AddE
           </div>
         </div>
 
+        {/* Date */}
+        <div className="mb-4">
+          <p className="mb-2 text-xs font-medium text-muted-foreground">Date</p>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start rounded-xl text-left font-normal"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {format(date, "EEE, dd MMM yyyy")}
+                {isToday && <span className="ml-auto text-xs text-primary font-semibold">Today</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={(d) => d && setDate(d)}
+                disabled={(d) => d > new Date()}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
         {/* Category */}
         <div className="mb-4">
           <p className="mb-2 text-xs font-medium text-muted-foreground">Category</p>
@@ -85,6 +171,14 @@ export default function AddExpenseSheet({ open, onClose, onAdd, currency }: AddE
               </Button>
             ))}
           </div>
+          {category === "Other" && (
+            <Input
+              placeholder="What did you spend on? (e.g. Gift, Movie)"
+              value={customName}
+              onChange={e => setCustomName(e.target.value)}
+              className="mt-2 rounded-xl"
+            />
+          )}
         </div>
 
         {/* Payment Method */}
@@ -114,7 +208,7 @@ export default function AddExpenseSheet({ open, onClose, onAdd, currency }: AddE
         />
 
         <Button onClick={handleSubmit} className="w-full rounded-xl py-6 text-base font-semibold">
-          <Plus className="h-5 w-5" /> Add Expense
+          {editing ? <><Check className="h-5 w-5" /> Save changes</> : <><Plus className="h-5 w-5" /> Add Expense</>}
         </Button>
       </div>
     </div>
