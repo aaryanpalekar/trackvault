@@ -5,8 +5,11 @@ export interface Expense {
   amount: number;
   category: string;
   paymentMethod: PaymentMethod;
+  /** When the expense actually happened (epoch ms) */
   timestamp: number;
   note?: string;
+  /** Custom item name when category is "Other" */
+  customName?: string;
 }
 
 export type BorrowingType = "lent" | "owed";
