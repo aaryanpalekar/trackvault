@@ -118,18 +118,23 @@ export default function IncomePage({ incomes, currency, onAdd, onUpdate, onDelet
   };
 
   return (
-    <div className="animate-slide-up pb-24">
-      <h1 className="mb-4 font-heading text-2xl font-bold">Received</h1>
+    <div className="animate-slide-up pb-24 sm:max-w-2xl sm:mx-auto lg:max-w-5xl">
+      <div className="mb-4 flex items-end justify-between">
+        <div>
+          <h1 className="font-heading text-2xl font-bold sm:text-3xl">Received</h1>
+          <p className="text-xs text-muted-foreground">Track money coming in</p>
+        </div>
+      </div>
 
       {/* View Selector */}
-      <div className="mb-3 flex rounded-xl bg-secondary p-1">
+      <div className="mb-3 flex rounded-2xl border border-border/60 bg-card/60 p-1 shadow-card backdrop-blur sm:max-w-xs">
         {(["month", "year"] as View[]).map(v => (
           <button
             key={v}
             onClick={() => setView(v)}
             className={cn(
-              "flex-1 rounded-lg py-2 text-xs font-semibold transition-colors capitalize",
-              view === v ? "bg-card shadow-card text-foreground" : "text-muted-foreground"
+              "flex-1 rounded-xl py-2 text-xs font-semibold transition-smooth capitalize",
+              view === v ? "bg-gradient-primary text-primary-foreground shadow-glow" : "text-muted-foreground hover:text-foreground"
             )}
           >
             {v === "month" ? "Monthly" : "Yearly"}
@@ -139,12 +144,12 @@ export default function IncomePage({ incomes, currency, onAdd, onUpdate, onDelet
 
       {/* Date navigator */}
       <div className="mb-4 flex items-center gap-2">
-        <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl shrink-0" onClick={stepBack} aria-label="Previous">
+        <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl shrink-0" onClick={stepBack} aria-label="Previous">
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="flex-1 justify-center rounded-xl font-semibold">
+            <Button variant="outline" className="h-10 flex-1 justify-center rounded-xl font-semibold">
               <CalendarIcon className="mr-2 h-4 w-4" />
               {label}
             </Button>
@@ -160,27 +165,27 @@ export default function IncomePage({ incomes, currency, onAdd, onUpdate, onDelet
             />
           </PopoverContent>
         </Popover>
-        <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl shrink-0" onClick={stepForward} aria-label="Next">
+        <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl shrink-0" onClick={stepForward} aria-label="Next">
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Summary */}
-      <div className="mb-4 grid grid-cols-2 gap-3">
-        <div className="rounded-2xl bg-gradient-to-br from-primary to-primary/80 p-4 text-primary-foreground shadow-elevated">
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="rounded-3xl bg-gradient-primary p-4 text-primary-foreground shadow-elevated transition-bounce hover:-translate-y-1 hover:shadow-glow sm:p-5">
           <div className="mb-1 flex items-center gap-1.5">
             <TrendingUp className="h-3.5 w-3.5" />
-            <p className="text-[10px] opacity-80">Received</p>
+            <p className="text-[10px] opacity-80 sm:text-xs">Received</p>
           </div>
-          <p className="font-heading text-xl font-bold">{currency.symbol}{periodTotal.toLocaleString()}</p>
-          <p className="text-[10px] opacity-70">{txCount} entries</p>
+          <p className="font-heading text-xl font-bold sm:text-2xl">{currency.symbol}{periodTotal.toLocaleString()}</p>
+          <p className="text-[10px] opacity-70 sm:text-xs">{txCount} entries</p>
         </div>
-        <div className="rounded-2xl bg-card p-4 shadow-card">
-          <p className="text-[10px] text-muted-foreground">Avg per entry</p>
-          <p className="font-heading text-xl font-bold">
+        <div className="rounded-3xl border border-border/60 bg-card p-4 shadow-card transition-bounce hover:-translate-y-1 hover:shadow-elevated sm:p-5">
+          <p className="text-[10px] text-muted-foreground sm:text-xs">Avg per entry</p>
+          <p className="font-heading text-xl font-bold sm:text-2xl">
             {currency.symbol}{txCount > 0 ? Math.round(periodTotal / txCount).toLocaleString() : 0}
           </p>
-          <p className="text-[10px] text-muted-foreground">this {view}</p>
+          <p className="text-[10px] text-muted-foreground sm:text-xs">this {view}</p>
         </div>
       </div>
 

@@ -42,37 +42,39 @@ export default function DuesPage({
   };
 
   return (
-    <div className="animate-slide-up">
-      <h1 className="mb-2 font-heading text-2xl font-bold">Dues</h1>
-      <p className="mb-5 text-xs text-muted-foreground">Track money lent & owed</p>
+    <div className="animate-slide-up pb-6 sm:max-w-2xl sm:mx-auto lg:max-w-5xl">
+      <div className="mb-5">
+        <h1 className="font-heading text-2xl font-bold sm:text-3xl">Dues</h1>
+        <p className="text-xs text-muted-foreground">Track money lent & owed</p>
+      </div>
 
       {/* Summary Cards */}
-      <div className="mb-4 grid grid-cols-2 gap-3">
-        <div className="rounded-2xl bg-gradient-to-br from-accent to-accent/80 p-4 text-accent-foreground shadow-elevated">
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="rounded-3xl bg-gradient-accent p-4 text-accent-foreground shadow-elevated transition-bounce hover:-translate-y-1 hover:shadow-glow sm:p-5">
           <div className="flex items-center gap-1 mb-1">
             <ArrowUpRight className="h-3.5 w-3.5 opacity-80" />
-            <p className="text-[10px] opacity-80">They owe you</p>
+            <p className="text-[10px] opacity-80 sm:text-xs">They owe you</p>
           </div>
-          <p className="font-heading text-xl font-bold">{currency.symbol}{totalOwed.toLocaleString()}</p>
-          <p className="text-[10px] opacity-70">{pendingLent.length} pending</p>
+          <p className="font-heading text-xl font-bold sm:text-2xl">{currency.symbol}{totalOwed.toLocaleString()}</p>
+          <p className="text-[10px] opacity-70 sm:text-xs">{pendingLent.length} pending</p>
         </div>
-        <div className="rounded-2xl bg-gradient-to-br from-destructive to-destructive/80 p-4 text-destructive-foreground shadow-elevated">
+        <div className="rounded-3xl bg-gradient-to-br from-destructive to-destructive/70 p-4 text-destructive-foreground shadow-elevated transition-bounce hover:-translate-y-1 hover:shadow-glow sm:p-5">
           <div className="flex items-center gap-1 mb-1">
             <ArrowDownLeft className="h-3.5 w-3.5 opacity-80" />
-            <p className="text-[10px] opacity-80">You owe</p>
+            <p className="text-[10px] opacity-80 sm:text-xs">You owe</p>
           </div>
-          <p className="font-heading text-xl font-bold">{currency.symbol}{totalIOwe.toLocaleString()}</p>
-          <p className="text-[10px] opacity-70">{pendingOwed.length} pending</p>
+          <p className="font-heading text-xl font-bold sm:text-2xl">{currency.symbol}{totalIOwe.toLocaleString()}</p>
+          <p className="text-[10px] opacity-70 sm:text-xs">{pendingOwed.length} pending</p>
         </div>
       </div>
 
       {/* Tab Switch */}
-      <div className="mb-4 flex rounded-xl bg-secondary p-1">
+      <div className="mb-4 flex rounded-2xl border border-border/60 bg-card/60 p-1 shadow-card backdrop-blur sm:max-w-md">
         <button
           onClick={() => setTab("lent")}
           className={cn(
-            "flex-1 rounded-lg py-2 text-xs font-semibold transition-colors",
-            tab === "lent" ? "bg-card shadow-card text-foreground" : "text-muted-foreground"
+            "flex-1 rounded-xl py-2 text-xs font-semibold transition-smooth",
+            tab === "lent" ? "bg-gradient-primary text-primary-foreground shadow-glow" : "text-muted-foreground hover:text-foreground"
           )}
         >
           They Owe Me
@@ -80,8 +82,8 @@ export default function DuesPage({
         <button
           onClick={() => setTab("owed")}
           className={cn(
-            "flex-1 rounded-lg py-2 text-xs font-semibold transition-colors",
-            tab === "owed" ? "bg-card shadow-card text-foreground" : "text-muted-foreground"
+            "flex-1 rounded-xl py-2 text-xs font-semibold transition-smooth",
+            tab === "owed" ? "bg-gradient-primary text-primary-foreground shadow-glow" : "text-muted-foreground hover:text-foreground"
           )}
         >
           I Owe Them
