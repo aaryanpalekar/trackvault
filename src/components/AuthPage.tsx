@@ -80,7 +80,7 @@ export default function AuthPage() {
             Track every rupee, dollar or euro. See where your money goes with stunning charts and instant insights.
           </p>
           <div className="mt-2 flex flex-wrap gap-3">
-            {["📊 Smart stats", "💸 Dues tracking", "🌍 50+ currencies", "🌙 Dark mode"].map(t => (
+            {["📊 Smart stats", "💸 Dues tracking", "🌍 50+ currencies", "✨ Modern design"].map(t => (
               <span key={t} className="rounded-full border border-border bg-card/60 px-4 py-2 text-sm font-medium backdrop-blur">
                 {t}
               </span>
