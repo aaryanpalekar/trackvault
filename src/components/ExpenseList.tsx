@@ -52,9 +52,9 @@ export default function ExpenseList({
         return (
           <div
             key={exp.id}
-            className="flex items-center gap-3 rounded-2xl bg-card p-3 shadow-card animate-pop-in"
+            className="group flex items-center gap-3 rounded-2xl border border-border/40 bg-card p-3 shadow-card transition-smooth animate-pop-in hover:-translate-y-0.5 hover:border-border hover:shadow-elevated"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-lg">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-secondary to-secondary/60 text-lg transition-transform group-hover:scale-110">
               {cat?.emoji ?? "📦"}
             </div>
             <div className="flex-1 min-w-0">
@@ -73,7 +73,7 @@ export default function ExpenseList({
             {onEdit && (
               <button
                 onClick={() => onEdit(exp)}
-                className="rounded-lg p-1.5 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
+                className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
                 aria-label="Edit"
               >
                 <Pencil className="h-3.5 w-3.5" />
@@ -81,7 +81,7 @@ export default function ExpenseList({
             )}
             <button
               onClick={() => onDelete(exp.id)}
-              className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+              className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
               aria-label="Delete"
             >
               <Trash2 className="h-3.5 w-3.5" />
