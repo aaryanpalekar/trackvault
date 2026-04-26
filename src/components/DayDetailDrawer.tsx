@@ -51,13 +51,13 @@ export default function DayDetailDrawer({
   else if (isYesterday(date)) dateLabel = `Yesterday · ${format(date, "dd/MM/yyyy")}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md max-h-[85vh] overflow-y-auto animate-slide-up rounded-t-3xl bg-card p-6 pb-10 shadow-elevated">
+    <div className="fixed inset-0 z-50 flex items-end justify-center md:items-stretch md:justify-end">
+      <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm animate-fade-in" onClick={onClose} />
+      <div className="relative w-full max-w-md max-h-[85vh] overflow-y-auto animate-slide-up rounded-t-3xl bg-card p-6 pb-10 shadow-elevated md:max-h-screen md:h-screen md:max-w-lg md:rounded-none md:rounded-l-3xl md:animate-slide-in-right md:pb-6">
         <div className="mb-4 flex items-start justify-between">
           <div>
             <p className="text-[11px] font-medium text-muted-foreground">{dateLabel}</p>
-            <h2 className="font-heading text-2xl font-bold">
+            <h2 className="font-heading text-2xl font-bold sm:text-3xl">
               {currency.symbol}{total.toLocaleString()}
             </h2>
             <p className="text-[11px] text-muted-foreground flex items-center gap-1">
@@ -65,7 +65,7 @@ export default function DayDetailDrawer({
               {filterCategory && <span className="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-primary font-semibold">{filterCategory}</span>}
             </p>
           </div>
-          <button onClick={onClose} className="rounded-full p-1 hover:bg-secondary" aria-label="Close">
+          <button onClick={onClose} className="rounded-full p-2 transition-colors hover:bg-secondary" aria-label="Close">
             <X className="h-5 w-5 text-muted-foreground" />
           </button>
         </div>

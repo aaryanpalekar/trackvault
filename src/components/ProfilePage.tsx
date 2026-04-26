@@ -81,17 +81,25 @@ export default function ProfilePage({ currencyCode, onChangeCurrency, username, 
       </div>
 
       {/* Theme Toggle */}
-      <div className="mb-4 rounded-2xl bg-card p-4 shadow-card">
+      <div className="mb-4 rounded-2xl bg-card p-4 shadow-card hover-lift">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {dark ? <Moon className="h-5 w-5 text-primary" /> : <Sun className="h-5 w-5 text-accent" />}
+            <div className={cn(
+              "flex h-10 w-10 items-center justify-center rounded-xl transition-colors",
+              dark ? "bg-primary/15 text-primary" : "bg-accent/15 text-accent"
+            )}>
+              {dark ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+            </div>
             <div>
-              <p className="text-sm font-semibold">Dark Mode</p>
-              <p className="text-[10px] text-muted-foreground">Toggle app theme</p>
+              <p className="text-sm font-semibold">Appearance</p>
+              <p className="text-[11px] text-muted-foreground">
+                {dark ? "Currently using dark theme" : "Currently using light theme"}
+              </p>
             </div>
           </div>
           <button
             onClick={toggleDark}
+            aria-label="Toggle appearance"
             className={cn(
               "relative h-7 w-12 rounded-full transition-colors",
               dark ? "bg-primary" : "bg-secondary"
@@ -99,10 +107,12 @@ export default function ProfilePage({ currencyCode, onChangeCurrency, username, 
           >
             <span
               className={cn(
-                "absolute top-0.5 h-6 w-6 rounded-full bg-card shadow-md transition-transform",
+                "absolute top-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-card shadow-md transition-transform",
                 dark ? "left-[22px]" : "left-0.5"
               )}
-            />
+            >
+              {dark ? <Moon className="h-3 w-3 text-primary" /> : <Sun className="h-3 w-3 text-accent" />}
+            </span>
           </button>
         </div>
       </div>
