@@ -58,11 +58,14 @@ export default function DayDetailDrawer({
       .sort((a, b) => b.sum - a.sum);
   }, [items, total]);
 
-  if (!open || !date) return null;
+  if (!open) return null;
+  const isRange = rangeStart !== undefined && rangeEnd !== undefined;
+  if (!isRange && !date) return null;
 
-  let dateLabel = format(date, "EEE, dd/MM/yyyy");
-  if (isToday(date)) dateLabel = `Today · ${format(date, "dd/MM/yyyy")}`;
-  else if (isYesterday(date)) dateLabel = `Yesterday · ${format(date, "dd/MM/yyyy")}`;
+  let dateLabel = date ? format(date, "EEE, dd/MM/yyyy") : "";
+  if (date && isToday(date)) dateLabel = `Today · ${format(date, "dd/MM/yyyy")}`;
+  else if (date && isYesterday(date)) dateLabel = `Yesterday · ${format(date, "dd/MM/yyyy")}`;
+  if (rangeLabel) dateLabel = rangeLabel;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center md:items-stretch md:justify-end">
