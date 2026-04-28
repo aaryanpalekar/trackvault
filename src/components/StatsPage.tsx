@@ -47,12 +47,14 @@ export default function StatsPage({ allExpenses, currency, onEdit, onDelete }: S
   const [pickerOpen, setPickerOpen] = useState(false);
   const [drawerDate, setDrawerDate] = useState<Date | null>(null);
   const [drawerCategory, setDrawerCategory] = useState<string | undefined>(undefined);
+  const [drawerRange, setDrawerRange] = useState<{ start: number; end: number; label: string } | null>(null);
 
   const openDrawer = (d: Date, category?: string) => {
     setDrawerDate(d);
     setDrawerCategory(category);
+    setDrawerRange(null);
   };
-  const closeDrawer = () => { setDrawerDate(null); setDrawerCategory(undefined); };
+  const closeDrawer = () => { setDrawerDate(null); setDrawerCategory(undefined); setDrawerRange(null); };
 
   // For "day" view: clicking a category opens that day filtered to that category.
   // For "month" view: clicking a day opens that day.
