@@ -83,16 +83,17 @@ export default function StatsPage({ allExpenses, currency, onEdit, onDelete }: S
 
   const handlePieClick = (entry: any) => {
     if (!entry?.name) return;
-    // Open drawer for a representative date filtered to this category
     if (view === "day") {
       openDrawer(anchorDate, entry.name);
     } else {
-      // For month/year, find the most recent expense in that category and open its day
-      const match = allExpenses.find(e =>
-        e.category === entry.name &&
-        e.timestamp >= rangeStart.getTime() && e.timestamp <= rangeEnd.getTime()
-      );
-      if (match) openDrawer(new Date(match.timestamp), entry.name);
+      // Show ALL transactions in the active period for this category
+      setDrawerDate(null);
+      setDrawerCategory(entry.name);
+      setDrawerRange({
+        start: rangeStart.getTime(),
+        end: rangeEnd.getTime(),
+        label: `${entry.name} · ${label}`,
+      });
     }
   };
 
