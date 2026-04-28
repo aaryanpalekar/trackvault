@@ -139,7 +139,7 @@ export default function DayDetailDrawer({
                         {exp.customName && <span className="ml-1 text-[10px] text-muted-foreground font-normal">· {exp.category}</span>}
                       </p>
                       <p className="text-[10px] text-muted-foreground truncate">
-                        {pm?.icon} {pm?.label} · {format(new Date(exp.timestamp), "h:mm a")}
+                        {pm?.icon} {pm?.label} · {format(new Date(exp.timestamp), isRange ? "dd MMM, h:mm a" : "h:mm a")}
                         {exp.note && ` · ${exp.note}`}
                       </p>
                     </div>
