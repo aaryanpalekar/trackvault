@@ -14,20 +14,34 @@ interface DayDetailDrawerProps {
   onEdit?: (exp: Expense) => void;
   /** Optional category filter — only show items matching this category */
   filterCategory?: string;
+  /** Optional explicit range (epoch ms). When provided, overrides single-day filtering. */
+  rangeStart?: number;
+  rangeEnd?: number;
+  /** Optional label override shown in the header (e.g. "April 2026") */
+  rangeLabel?: string;
 }
 
 export default function DayDetailDrawer({
-  open, date, expenses, currency, onClose, onEdit, filterCategory,
+  open, date, expenses, currency, onClose, onEdit, filterCategory, rangeStart, rangeEnd, rangeLabel,
 }: DayDetailDrawerProps) {
   const items = useMemo(() => {
-    if (!date) return [];
-    const dayStart = new Date(date); dayStart.setHours(0, 0, 0, 0);
-    const dayEnd = dayStart.getTime() + 24 * 60 * 60 * 1000;
+    let start: number;
+    let end: number;
+    if (rangeStart !== undefined && rangeEnd !== undefined) {
+      start = rangeStart;
+      end = rangeEnd;
+    } else if (date) {
+      const dayStart = new Date(date); dayStart.setHours(0, 0, 0, 0);
+      start = dayStart.getTime();
+      end = start + 24 * 60 * 60 * 1000 - 1;
+    } else {
+      return [];
+    }
     return expenses
-      .filter(e => e.timestamp >= dayStart.getTime() && e.timestamp < dayEnd)
+      .filter(e => e.timestamp >= start && e.timestamp <= end)
       .filter(e => !filterCategory || e.category === filterCategory)
       .sort((a, b) => b.timestamp - a.timestamp);
-  }, [date, expenses, filterCategory]);
+  }, [date, expenses, filterCategory, rangeStart, rangeEnd]);
 
   const total = items.reduce((s, e) => s + e.amount, 0);
 
@@ -44,11 +58,14 @@ export default function DayDetailDrawer({
       .sort((a, b) => b.sum - a.sum);
   }, [items, total]);
 
-  if (!open || !date) return null;
+  if (!open) return null;
+  const isRange = rangeStart !== undefined && rangeEnd !== undefined;
+  if (!isRange && !date) return null;
 
-  let dateLabel = format(date, "EEE, dd/MM/yyyy");
-  if (isToday(date)) dateLabel = `Today · ${format(date, "dd/MM/yyyy")}`;
-  else if (isYesterday(date)) dateLabel = `Yesterday · ${format(date, "dd/MM/yyyy")}`;
+  let dateLabel = date ? format(date, "EEE, dd/MM/yyyy") : "";
+  if (date && isToday(date)) dateLabel = `Today · ${format(date, "dd/MM/yyyy")}`;
+  else if (date && isYesterday(date)) dateLabel = `Yesterday · ${format(date, "dd/MM/yyyy")}`;
+  if (rangeLabel) dateLabel = rangeLabel;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center md:items-stretch md:justify-end">
@@ -73,7 +90,7 @@ export default function DayDetailDrawer({
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
             <span className="text-4xl mb-2">🌿</span>
-            <p className="text-sm font-medium">No spending {filterCategory ? `on ${filterCategory}` : ""} this day</p>
+            <p className="text-sm font-medium">No spending {filterCategory ? `on ${filterCategory}` : ""} {isRange ? "in this period" : "this day"}</p>
           </div>
         ) : (
           <>
@@ -122,7 +139,7 @@ export default function DayDetailDrawer({
                         {exp.customName && <span className="ml-1 text-[10px] text-muted-foreground font-normal">· {exp.category}</span>}
                       </p>
                       <p className="text-[10px] text-muted-foreground truncate">
-                        {pm?.icon} {pm?.label} · {format(new Date(exp.timestamp), "h:mm a")}
+                        {pm?.icon} {pm?.label} · {format(new Date(exp.timestamp), isRange ? "dd MMM, h:mm a" : "h:mm a")}
                         {exp.note && ` · ${exp.note}`}
                       </p>
                     </div>

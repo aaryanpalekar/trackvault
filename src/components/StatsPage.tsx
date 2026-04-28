@@ -47,12 +47,14 @@ export default function StatsPage({ allExpenses, currency, onEdit, onDelete }: S
   const [pickerOpen, setPickerOpen] = useState(false);
   const [drawerDate, setDrawerDate] = useState<Date | null>(null);
   const [drawerCategory, setDrawerCategory] = useState<string | undefined>(undefined);
+  const [drawerRange, setDrawerRange] = useState<{ start: number; end: number; label: string } | null>(null);
 
   const openDrawer = (d: Date, category?: string) => {
     setDrawerDate(d);
     setDrawerCategory(category);
+    setDrawerRange(null);
   };
-  const closeDrawer = () => { setDrawerDate(null); setDrawerCategory(undefined); };
+  const closeDrawer = () => { setDrawerDate(null); setDrawerCategory(undefined); setDrawerRange(null); };
 
   // For "day" view: clicking a category opens that day filtered to that category.
   // For "month" view: clicking a day opens that day.
@@ -81,16 +83,17 @@ export default function StatsPage({ allExpenses, currency, onEdit, onDelete }: S
 
   const handlePieClick = (entry: any) => {
     if (!entry?.name) return;
-    // Open drawer for a representative date filtered to this category
     if (view === "day") {
       openDrawer(anchorDate, entry.name);
     } else {
-      // For month/year, find the most recent expense in that category and open its day
-      const match = allExpenses.find(e =>
-        e.category === entry.name &&
-        e.timestamp >= rangeStart.getTime() && e.timestamp <= rangeEnd.getTime()
-      );
-      if (match) openDrawer(new Date(match.timestamp), entry.name);
+      // Show ALL transactions in the active period for this category
+      setDrawerDate(null);
+      setDrawerCategory(entry.name);
+      setDrawerRange({
+        start: rangeStart.getTime(),
+        end: rangeEnd.getTime(),
+        label: `${entry.name} · ${label}`,
+      });
     }
   };
 
@@ -523,13 +526,16 @@ export default function StatsPage({ allExpenses, currency, onEdit, onDelete }: S
       </div>
 
       <DayDetailDrawer
-        open={drawerDate !== null}
+        open={drawerDate !== null || drawerRange !== null}
         date={drawerDate}
         expenses={allExpenses}
         currency={currency}
         onClose={closeDrawer}
         onEdit={(exp) => { closeDrawer(); onEdit?.(exp); }}
         filterCategory={drawerCategory}
+        rangeStart={drawerRange?.start}
+        rangeEnd={drawerRange?.end}
+        rangeLabel={drawerRange?.label}
       />
     </div>
   );
