@@ -14,20 +14,34 @@ interface DayDetailDrawerProps {
   onEdit?: (exp: Expense) => void;
   /** Optional category filter — only show items matching this category */
   filterCategory?: string;
+  /** Optional explicit range (epoch ms). When provided, overrides single-day filtering. */
+  rangeStart?: number;
+  rangeEnd?: number;
+  /** Optional label override shown in the header (e.g. "April 2026") */
+  rangeLabel?: string;
 }
 
 export default function DayDetailDrawer({
-  open, date, expenses, currency, onClose, onEdit, filterCategory,
+  open, date, expenses, currency, onClose, onEdit, filterCategory, rangeStart, rangeEnd, rangeLabel,
 }: DayDetailDrawerProps) {
   const items = useMemo(() => {
-    if (!date) return [];
-    const dayStart = new Date(date); dayStart.setHours(0, 0, 0, 0);
-    const dayEnd = dayStart.getTime() + 24 * 60 * 60 * 1000;
+    let start: number;
+    let end: number;
+    if (rangeStart !== undefined && rangeEnd !== undefined) {
+      start = rangeStart;
+      end = rangeEnd;
+    } else if (date) {
+      const dayStart = new Date(date); dayStart.setHours(0, 0, 0, 0);
+      start = dayStart.getTime();
+      end = start + 24 * 60 * 60 * 1000 - 1;
+    } else {
+      return [];
+    }
     return expenses
-      .filter(e => e.timestamp >= dayStart.getTime() && e.timestamp < dayEnd)
+      .filter(e => e.timestamp >= start && e.timestamp <= end)
       .filter(e => !filterCategory || e.category === filterCategory)
       .sort((a, b) => b.timestamp - a.timestamp);
-  }, [date, expenses, filterCategory]);
+  }, [date, expenses, filterCategory, rangeStart, rangeEnd]);
 
   const total = items.reduce((s, e) => s + e.amount, 0);
 
