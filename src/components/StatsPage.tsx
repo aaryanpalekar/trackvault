@@ -526,13 +526,16 @@ export default function StatsPage({ allExpenses, currency, onEdit, onDelete }: S
       </div>
 
       <DayDetailDrawer
-        open={drawerDate !== null}
+        open={drawerDate !== null || drawerRange !== null}
         date={drawerDate}
         expenses={allExpenses}
         currency={currency}
         onClose={closeDrawer}
         onEdit={(exp) => { closeDrawer(); onEdit?.(exp); }}
         filterCategory={drawerCategory}
+        rangeStart={drawerRange?.start}
+        rangeEnd={drawerRange?.end}
+        rangeLabel={drawerRange?.label}
       />
     </div>
   );
