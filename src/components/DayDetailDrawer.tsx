@@ -90,7 +90,7 @@ export default function DayDetailDrawer({
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
             <span className="text-4xl mb-2">🌿</span>
-            <p className="text-sm font-medium">No spending {filterCategory ? `on ${filterCategory}` : ""} this day</p>
+            <p className="text-sm font-medium">No spending {filterCategory ? `on ${filterCategory}` : ""} {isRange ? "in this period" : "this day"}</p>
           </div>
         ) : (
           <>
