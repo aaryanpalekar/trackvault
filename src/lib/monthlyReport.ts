@@ -25,12 +25,15 @@ export function generateMonthlyReport({
 
   const monthExpenses = expenses
     .filter(e => e.timestamp >= start && e.timestamp <= end)
-    .sort((a, b) => b.timestamp - a.timestamp);
+    .sort((a, b) => a.timestamp - b.timestamp);
 
   const totalSpent = monthExpenses.reduce((s, e) => s + e.amount, 0);
 
+  // Use ISO currency code instead of symbol — jsPDF's built-in fonts don't
+  // include glyphs for many currency symbols (e.g. ₹) and render them as
+  // a small "1" superscript artifact.
   const fmt = (n: number) =>
-    `${currency.symbol}${n.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+    `${currency.code} ${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
@@ -38,20 +41,17 @@ export function generateMonthlyReport({
   const M = 48;
 
   // ===== HEADER =====
+  // Small label
+  doc.setTextColor(...MUTED);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.text("Monthly Report", M, 64);
+
+  // Big month/year title
   doc.setTextColor(...INK);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(22);
-  doc.text("Monthly Report", M, 70);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(12);
-  doc.setTextColor(...MUTED);
-  doc.text(format(month, "MMMM yyyy"), M, 92);
-
-  if (username) {
-    doc.setFontSize(10);
-    doc.text(`Prepared for ${username}`, M, 110);
-  }
+  doc.setFontSize(30);
+  doc.text(format(month, "MMMM yyyy"), M, 100);
 
   // Divider
   doc.setDrawColor(...HAIR);
@@ -107,7 +107,7 @@ export function generateMonthlyReport({
       alternateRowStyles: { fillColor: [250, 251, 252] },
       columnStyles: {
         0: { cellWidth: 90 },
-        4: { halign: "right", fontStyle: "bold" },
+        4: { halign: "right", font: "courier", fontStyle: "bold" },
       },
       margin: { left: M, right: M },
       didDrawPage: () => drawFooter(doc, pageW, pageH, M),
