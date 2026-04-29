@@ -219,6 +219,10 @@ const HomePage = () => {
             username={username}
             onChangeUsername={setUsername}
             onSignOut={signOut}
+            currency={currency}
+            expenses={expenses}
+            incomes={incomes}
+            borrowings={borrowings}
           />
         )}
       </div>
