@@ -67,23 +67,26 @@ export function generateMonthlyReport({
   // ===== TRANSACTIONS TABLE =====
   if (monthExpenses.length === 0) {
     doc.setTextColor(...MUTED);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.text("No transactions recorded this month.", M, 160);
+    doc.setFont("times", "italic");
+    doc.setFontSize(12);
+    doc.text("No transactions recorded this month.", M, 180);
   } else {
+    const amountHeader = `Amount (${currency.code})`;
     autoTable(doc, {
-      startY: 144,
-      head: [["Date", "Item", "Category", "Payment", "Amount"]],
+      startY: 160,
+      head: [["Date", "Item", "Category", "Payment", amountHeader]],
       body: monthExpenses.map(e => {
         const pm = PAYMENT_METHODS.find(p => p.value === e.paymentMethod);
-        // For "Other" category, show the custom name/reason instead of "Other"
-        const isOther = e.category === "Other";
-        const itemName = e.customName || e.note || (isOther ? "—" : e.category);
-        const categoryLabel = isOther ? (e.customName || e.note || "—") : e.category;
+        // Item shows the user's reason / custom name; Category stays as-is
+        // (so "Other" remains "Other").
+        const item =
+          e.customName?.trim() ||
+          e.note?.trim() ||
+          e.category;
         return [
           format(new Date(e.timestamp), "dd MMM yyyy"),
-          itemName,
-          categoryLabel,
+          item,
+          e.category,
           pm?.label ?? e.paymentMethod,
           fmt(e.amount),
         ];
@@ -92,31 +95,43 @@ export function generateMonthlyReport({
       styles: {
         font: "helvetica",
         fontSize: 10,
-        cellPadding: 8,
+        cellPadding: { top: 9, right: 10, bottom: 9, left: 10 },
         textColor: INK,
         lineColor: HAIR,
         lineWidth: 0.3,
+        valign: "middle",
       },
       headStyles: {
         fillColor: INK,
         textColor: [255, 255, 255],
         fontStyle: "bold",
         fontSize: 10,
-        cellPadding: 9,
+        cellPadding: { top: 11, right: 10, bottom: 11, left: 10 },
+        halign: "left",
       },
       footStyles: {
         fillColor: [245, 247, 248],
         textColor: INK,
         fontStyle: "bold",
-        fontSize: 10,
+        fontSize: 11,
+        halign: "left",
       },
       alternateRowStyles: { fillColor: [250, 251, 252] },
       columnStyles: {
-        0: { cellWidth: 90 },
-        4: { halign: "right", font: "courier", fontStyle: "bold" },
+        0: { cellWidth: 88, halign: "left" },
+        1: { halign: "left" },
+        2: { cellWidth: 80, halign: "left" },
+        3: { cellWidth: 80, halign: "left" },
+        4: { cellWidth: 90, halign: "right", font: "courier", fontStyle: "bold" },
       },
       margin: { left: M, right: M },
       didDrawPage: () => drawFooter(doc, pageW, pageH, M),
+      didParseCell: (data) => {
+        // Right-align the "Total" label in the footer to sit next to the amount.
+        if (data.section === "foot" && data.column.index === 3) {
+          data.cell.styles.halign = "right";
+        }
+      },
     });
   }
 
