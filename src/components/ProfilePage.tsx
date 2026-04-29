@@ -1,9 +1,11 @@
-import { CURRENCIES } from "@/lib/currencies";
-import { Check, Globe, Moon, Sun, UserCircle, LogOut, Pencil } from "lucide-react";
+import { CURRENCIES, Currency } from "@/lib/currencies";
+import { Check, Globe, Moon, Sun, LogOut, Pencil } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import DownloadReportDialog from "@/components/DownloadReportDialog";
+import { Expense, Income, Borrowing } from "@/lib/types";
 
 interface ProfilePageProps {
   currencyCode: string;
@@ -11,9 +13,16 @@ interface ProfilePageProps {
   username: string;
   onChangeUsername: (name: string) => void;
   onSignOut: () => void;
+  currency: Currency;
+  expenses: Expense[];
+  incomes: Income[];
+  borrowings: Borrowing[];
 }
 
-export default function ProfilePage({ currencyCode, onChangeCurrency, username, onChangeUsername, onSignOut }: ProfilePageProps) {
+export default function ProfilePage({
+  currencyCode, onChangeCurrency, username, onChangeUsername, onSignOut,
+  currency, expenses, incomes, borrowings,
+}: ProfilePageProps) {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState(false);
