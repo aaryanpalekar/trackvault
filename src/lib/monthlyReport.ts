@@ -107,7 +107,7 @@ export function generateMonthlyReport({
       alternateRowStyles: { fillColor: [250, 251, 252] },
       columnStyles: {
         0: { cellWidth: 90 },
-        4: { halign: "right", fontStyle: "bold" },
+        4: { halign: "right", font: "courier", fontStyle: "bold" },
       },
       margin: { left: M, right: M },
       didDrawPage: () => drawFooter(doc, pageW, pageH, M),
