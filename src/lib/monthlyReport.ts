@@ -51,7 +51,7 @@ export function generateMonthlyReport({
   doc.setTextColor(...MUTED);
   doc.setFont("times", "italic");
   doc.setFontSize(12);
-  doc.text("Monthly Report", M, 60);
+  doc.text("Monthly Expenses", M, 60);
 
   // Big month/year title
   doc.setTextColor(...INK);
