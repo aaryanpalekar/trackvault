@@ -51,7 +51,7 @@ export function generateMonthlyReport({
   doc.setTextColor(...MUTED);
   doc.setFont("times", "italic");
   doc.setFontSize(12);
-  doc.text("Monthly Report", M, 60);
+  doc.text("Monthly Expenses", M, 60);
 
   // Big month/year title
   doc.setTextColor(...INK);
@@ -74,7 +74,7 @@ export function generateMonthlyReport({
     const amountHeader = `Amount (${currency.code})`;
     autoTable(doc, {
       startY: 160,
-      head: [["Date", "Item", "Category", "Payment", amountHeader]],
+      head: [["Date", "Paid For", "Category", "Payment", amountHeader]],
       body: monthExpenses.map(e => {
         const pm = PAYMENT_METHODS.find(p => p.value === e.paymentMethod);
         // Item shows the user's reason / custom name; Category stays as-is
