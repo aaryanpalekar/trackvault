@@ -74,7 +74,7 @@ export function generateMonthlyReport({
     const amountHeader = `Amount (${currency.code})`;
     autoTable(doc, {
       startY: 160,
-      head: [["Date", "Item", "Category", "Payment", amountHeader]],
+      head: [["Date", "Paid For", "Category", "Payment", amountHeader]],
       body: monthExpenses.map(e => {
         const pm = PAYMENT_METHODS.find(p => p.value === e.paymentMethod);
         // Item shows the user's reason / custom name; Category stays as-is
