@@ -32,8 +32,10 @@ export function generateMonthlyReport({
   // Use ISO currency code instead of symbol — jsPDF's built-in fonts don't
   // include glyphs for many currency symbols (e.g. ₹) and render them as
   // a small "1" superscript artifact.
+  // Plain numeric amount — currency is shown once in the column header so
+  // every row stays clean and aligned (no awkward symbol/code prefix).
   const fmt = (n: number) =>
-    `${currency.code} ${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
@@ -41,22 +43,26 @@ export function generateMonthlyReport({
   const M = 48;
 
   // ===== HEADER =====
+  // Soft tinted band for a more polished look
+  doc.setFillColor(248, 250, 251);
+  doc.rect(0, 0, pageW, 140, "F");
+
   // Small label
   doc.setTextColor(...MUTED);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.text("Monthly Report", M, 64);
+  doc.setFont("times", "italic");
+  doc.setFontSize(12);
+  doc.text("Monthly Report", M, 60);
 
   // Big month/year title
   doc.setTextColor(...INK);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(30);
+  doc.setFont("times", "bold");
+  doc.setFontSize(34);
   doc.text(format(month, "MMMM yyyy"), M, 100);
 
-  // Divider
-  doc.setDrawColor(...HAIR);
-  doc.setLineWidth(0.6);
-  doc.line(M, 124, pageW - M, 124);
+  // Accent underline
+  doc.setDrawColor(...INK);
+  doc.setLineWidth(2);
+  doc.line(M, 112, M + 60, 112);
 
   // ===== TRANSACTIONS TABLE =====
   if (monthExpenses.length === 0) {
