@@ -126,9 +126,6 @@ export default function ProfilePage({
         </div>
       </div>
 
-      {/* Currency Selection */}
-      <div className="mb-4 rounded-2xl bg-card p-4 shadow-card">
-        <div className="mb-3 flex items-center gap-2">
       {/* Monthly Report Download */}
       <div className="mb-4">
         <DownloadReportDialog
@@ -145,6 +142,7 @@ export default function ProfilePage({
         <div className="mb-3 flex items-center gap-2">
           <Globe className="h-4 w-4 text-muted-foreground" />
           <h3 className="font-heading text-sm font-semibold">Currency</h3>
+        </div>
         <input
           type="text"
           placeholder="Search currency..."
