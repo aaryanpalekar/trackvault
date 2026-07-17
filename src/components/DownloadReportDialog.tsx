@@ -6,6 +6,7 @@ import { format, addMonths, subMonths, startOfMonth, endOfMonth, isSameMonth } f
 import { Expense, Income, Borrowing } from "@/lib/types";
 import { Currency } from "@/lib/currencies";
 import { generateMonthlyReport } from "@/lib/monthlyReport";
+import { generateMonthlyCsv } from "@/lib/monthlyCsv";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -169,14 +170,28 @@ export default function DownloadReportDialog({ username, currency, expenses, inc
             </div>
           </div>
 
-          <Button
-            onClick={handleDownload}
-            disabled={generating}
-            className="w-full rounded-xl gap-2 h-11 font-semibold"
-          >
-            <Download className="h-4 w-4" />
-            {generating ? "Generating..." : `Download ${format(month, "MMM yyyy")} report`}
-          </Button>
+          <div className="grid grid-cols-[1fr_auto] gap-2">
+            <Button
+              onClick={handleDownload}
+              disabled={generating}
+              className="rounded-xl gap-2 h-11 font-semibold"
+            >
+              <Download className="h-4 w-4" />
+              {generating ? "Generating..." : `Download PDF`}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                if (stats.txCount === 0) { toast.error("Nothing to export for this month"); return; }
+                generateMonthlyCsv({ month, currency, expenses });
+                toast.success(`CSV for ${format(month, "MMMM yyyy")} downloaded`);
+              }}
+              className="rounded-xl h-11 gap-2 font-semibold"
+            >
+              CSV
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
