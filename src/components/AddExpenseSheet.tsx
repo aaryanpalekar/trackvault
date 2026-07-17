@@ -34,9 +34,11 @@ interface AddExpenseSheetProps {
   currency: Currency;
   /** When provided, the sheet is in edit mode */
   editing?: Expense | null;
+  /** Pre-select a category when opening in add mode */
+  presetCategory?: string | null;
 }
 
-export default function AddExpenseSheet({ open, onClose, onAdd, onUpdate, currency, editing }: AddExpenseSheetProps) {
+export default function AddExpenseSheet({ open, onClose, onAdd, onUpdate, currency, editing, presetCategory }: AddExpenseSheetProps) {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<string>(CATEGORIES[0].label);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("upi");
@@ -56,14 +58,14 @@ export default function AddExpenseSheet({ open, onClose, onAdd, onUpdate, curren
         setCustomName(editing.customName ?? "");
       } else {
         setAmount("");
-        setCategory(CATEGORIES[0].label);
+        setCategory(presetCategory && CATEGORIES.some(c => c.label === presetCategory) ? presetCategory : CATEGORIES[0].label);
         setPaymentMethod("upi");
         setNote("");
         setDate(new Date());
         setCustomName("");
       }
     }
-  }, [open, editing]);
+  }, [open, editing, presetCategory]);
 
   const handleQuickAmount = (val: number) => setAmount(String(val));
 

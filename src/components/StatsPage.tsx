@@ -309,6 +309,41 @@ export default function StatsPage({ allExpenses, currency, onEdit, onDelete }: S
         </div>
       </div>
 
+      {/* Month-over-month insight */}
+      {categoryBreakdown.length > 0 && (() => {
+        const prevAnchor =
+          view === "day" ? new Date(anchorDate.getFullYear(), anchorDate.getMonth(), anchorDate.getDate() - 1) :
+          view === "month" ? subMonths(anchorDate, 1) :
+          new Date(anchorDate.getFullYear() - 1, 0, 1);
+        const prevStart =
+          view === "day" ? startOfDay(prevAnchor).getTime() :
+          view === "month" ? startOfMonth(prevAnchor).getTime() :
+          startOfYear(prevAnchor).getTime();
+        const prevEnd =
+          view === "day" ? endOfDay(prevAnchor).getTime() :
+          view === "month" ? endOfMonth(prevAnchor).getTime() :
+          endOfYear(prevAnchor).getTime();
+        const topCat = categoryBreakdown[0]?.name;
+        const topCurrent = categoryBreakdown[0]?.value ?? 0;
+        const topPrev = allExpenses
+          .filter(e => e.timestamp >= prevStart && e.timestamp <= prevEnd && e.category === topCat)
+          .reduce((s, e) => s + e.amount, 0);
+        const label = view === "day" ? "yesterday" : view === "month" ? "last month" : "last year";
+        let msg: string;
+        if (topPrev === 0 && topCurrent > 0) msg = `New spending on ${topCat} vs ${label}.`;
+        else if (topPrev === 0) msg = `No comparable spend for ${label}.`;
+        else {
+          const diffPct = Math.round(((topCurrent - topPrev) / topPrev) * 100);
+          if (Math.abs(diffPct) < 3) msg = `${topCat} spending is steady vs ${label}.`;
+          else msg = `${Math.abs(diffPct)}% ${diffPct > 0 ? "more" : "less"} on ${topCat} than ${label}.`;
+        }
+        return (
+          <div className="mb-3 rounded-2xl border border-border/60 bg-gradient-to-r from-primary/[0.06] via-accent/[0.05] to-transparent px-4 py-2.5 text-[12px] font-medium text-foreground/85 animate-fade-in">
+            <span className="mr-1">✨</span> {msg}
+          </div>
+        );
+      })()}
+
       {/* Pie chart - category distribution */}
       {categoryBreakdown.length > 0 && (
         <div className="mb-4 rounded-2xl bg-card p-4 shadow-card">

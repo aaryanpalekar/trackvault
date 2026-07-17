@@ -12,9 +12,9 @@
     --card-foreground: 224 25% 12%;
     --popover: 0 0% 100%;
     --popover-foreground: 224 25% 12%;
-    --primary: 160 84% 39%;
+    --primary: 158 86% 34%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 160 80% 55%;
+    --primary-glow: 158 78% 52%;
     --secondary: 220 18% 95%;
     --secondary-foreground: 224 25% 12%;
     --muted: 220 18% 96%;
@@ -45,9 +45,9 @@
                      radial-gradient(at 0% 90%, hsl(200 80% 90% / 0.4) 0px, transparent 50%);
     --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(220 30% 98%));
 
-    --shadow-card: 0 1px 3px hsl(220 25% 20% / 0.04), 0 4px 16px -4px hsl(220 25% 20% / 0.06);
-    --shadow-elevated: 0 4px 12px -2px hsl(220 25% 20% / 0.08), 0 16px 40px -12px hsl(220 25% 20% / 0.18);
-    --shadow-glow: 0 0 40px -8px hsl(var(--primary) / 0.4);
+    --shadow-card: 0 1px 2px hsl(160 25% 15% / 0.04), 0 6px 24px -10px hsl(160 25% 15% / 0.08);
+    --shadow-elevated: 0 2px 8px -2px hsl(160 25% 15% / 0.06), 0 20px 48px -18px hsl(160 25% 15% / 0.20);
+    --shadow-glow: 0 0 44px -10px hsl(var(--primary) / 0.35);
 
     --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -166,5 +166,20 @@
   }
   .scrollbar-hide {
     scrollbar-width: none;
+  }
+  /* Subtle bar-rise for chart entrance */
+  @keyframes bar-rise {
+    from { transform: scaleY(0.05); opacity: 0.4; }
+    to   { transform: scaleY(1); opacity: 1; }
+  }
+  .animate-bar-rise {
+    transform-origin: bottom;
+    animation: bar-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-bar-rise,
+    .animate-slide-up,
+    .animate-fade-in,
+    .animate-pop-in { animation: none !important; }
   }
 }

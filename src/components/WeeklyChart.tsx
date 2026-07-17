@@ -56,7 +56,13 @@ export default function WeeklyChart({ data, currency, onSelectDay }: WeeklyChart
               ]}
               labelFormatter={(l) => `${l}`}
             />
-            <Bar dataKey="total" radius={[6, 6, 0, 0]} className="cursor-pointer">
+            <Bar
+              dataKey="total"
+              radius={[6, 6, 0, 0]}
+              className="cursor-pointer"
+              animationDuration={900}
+              animationEasing="ease-out"
+            >
               {data.map((entry, i) => (
                 <Cell
                   key={i}
