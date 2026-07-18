@@ -165,22 +165,22 @@ export function useExpenses() {
 
   const weekExpenses = useMemo(() => {
     const now = new Date();
-    const dow = now.getDay();
+    const dow = now.getDay(); // 0 = Sunday
     const start = new Date(now);
-    start.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1));
+    start.setDate(now.getDate() - dow);
     start.setHours(0, 0, 0, 0);
     return expenses.filter(e => e.timestamp >= start.getTime());
   }, [expenses]);
 
   const weeklyData = useMemo(() => {
-    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const now = new Date();
     const dow = now.getDay();
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1));
-    monday.setHours(0, 0, 0, 0);
+    const sunday = new Date(now);
+    sunday.setDate(now.getDate() - dow);
+    sunday.setHours(0, 0, 0, 0);
     return days.map((name, i) => {
-      const dayStart = new Date(monday); dayStart.setDate(monday.getDate() + i);
+      const dayStart = new Date(sunday); dayStart.setDate(sunday.getDate() + i);
       const dayEnd = new Date(dayStart); dayEnd.setDate(dayStart.getDate() + 1);
       const dayExpenses = weekExpenses.filter(
         e => e.timestamp >= dayStart.getTime() && e.timestamp < dayEnd.getTime()
@@ -189,7 +189,7 @@ export function useExpenses() {
       return {
         name,
         total,
-        isToday: i === (dow === 0 ? 6 : dow - 1),
+        isToday: i === dow,
         date: dayStart,
         count: dayExpenses.length,
       };
