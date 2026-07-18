@@ -7,6 +7,7 @@ import { Expense, Income, Borrowing } from "@/lib/types";
 import { Currency } from "@/lib/currencies";
 import { generateMonthlyReport } from "@/lib/monthlyReport";
 import { generateMonthlyCsv } from "@/lib/monthlyCsv";
+import { generateMonthlyXlsx } from "@/lib/monthlyXlsx";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
