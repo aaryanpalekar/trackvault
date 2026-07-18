@@ -12,6 +12,7 @@ import IncomePage from "@/components/IncomePage";
 import AuthPage from "@/components/AuthPage";
 import DayDetailDrawer from "@/components/DayDetailDrawer";
 import SearchOverlay from "@/components/SearchOverlay";
+import InsightsCard from "@/components/InsightsCard";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useAuth } from "@/hooks/useAuth";
 import { Expense, CATEGORIES } from "@/lib/types";
