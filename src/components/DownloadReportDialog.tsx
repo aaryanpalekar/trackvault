@@ -171,28 +171,48 @@ export default function DownloadReportDialog({ username, currency, expenses, inc
             </div>
           </div>
 
-          <div className="grid grid-cols-[1fr_auto] gap-2">
+          <div className="space-y-2">
             <Button
               onClick={handleDownload}
               disabled={generating}
-              className="rounded-xl gap-2 h-11 font-semibold"
+              className="rounded-xl gap-2 h-11 w-full font-semibold"
             >
               <Download className="h-4 w-4" />
-              {generating ? "Generating..." : `Download PDF`}
+              {generating ? "Generating..." : "Download PDF"}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                if (stats.txCount === 0) { toast.error("Nothing to export for this month"); return; }
-                generateMonthlyCsv({ month, currency, expenses });
-                toast.success(`CSV for ${format(month, "MMMM yyyy")} downloaded`);
-              }}
-              className="rounded-xl h-11 gap-2 font-semibold"
-            >
-              CSV
-            </Button>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={async () => {
+                  if (stats.txCount === 0 && stats.earned === 0) { toast.error("Nothing to export for this month"); return; }
+                  try {
+                    await generateMonthlyXlsx({ month, currency, username, expenses, incomes });
+                    toast.success(`Excel report for ${format(month, "MMMM yyyy")} downloaded`);
+                  } catch (e) {
+                    console.error(e);
+                    toast.error("Failed to generate Excel file");
+                  }
+                }}
+                className="rounded-xl h-10 gap-2 font-semibold"
+              >
+                Excel (.xlsx)
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  if (stats.txCount === 0) { toast.error("Nothing to export for this month"); return; }
+                  generateMonthlyCsv({ month, currency, expenses });
+                  toast.success(`CSV for ${format(month, "MMMM yyyy")} downloaded`);
+                }}
+                className="rounded-xl h-10 gap-2 font-semibold"
+              >
+                Raw CSV
+              </Button>
+            </div>
           </div>
+
         </div>
       </DialogContent>
     </Dialog>
