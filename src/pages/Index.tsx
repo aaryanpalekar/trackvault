@@ -211,6 +211,11 @@ const HomePage = () => {
               </div>
             )}
 
+            {/* Daily / Weekly / Monthly insights */}
+            <div className="mb-4 sm:mb-5">
+              <InsightsCard expenses={expenses} incomes={incomes} currency={currency} />
+            </div>
+
             {/* Two-column on desktop: chart + recent */}
             <div className="grid gap-4 lg:grid-cols-5 lg:gap-6">
               <div className="lg:col-span-3">
