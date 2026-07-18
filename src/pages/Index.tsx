@@ -168,12 +168,10 @@ const HomePage = () => {
                   <p className="text-[10px] opacity-70 sm:text-xs">{pendingBorrowings.length} pending</p>
                 </button>
               ) : (
-                <div className="rounded-3xl border border-border/60 bg-card p-4 shadow-card transition-bounce hover:-translate-y-1 hover:shadow-elevated sm:p-5">
-                  <p className="text-[10px] text-muted-foreground sm:text-xs">Avg/day</p>
-                  <p className="font-heading text-xl font-bold sm:text-2xl">
-                    {currency.symbol}{Math.round(weekTotal / 7).toLocaleString()}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground sm:text-xs">this week</p>
+                <div className="rounded-3xl border border-border/60 bg-card p-4 shadow-card transition-bounce hover:-translate-y-1 hover:shadow-elevated sm:p-5 lg:hidden">
+                  <p className="text-[10px] text-muted-foreground sm:text-xs">Today's txns</p>
+                  <p className="font-heading text-xl font-bold sm:text-2xl">{todayExpenses.length}</p>
+                  <p className="text-[10px] text-muted-foreground sm:text-xs">recorded</p>
                 </div>
               )}
               <div className="hidden rounded-3xl border border-border/60 bg-card p-4 shadow-card transition-bounce hover:-translate-y-1 hover:shadow-elevated sm:p-5 lg:block">
