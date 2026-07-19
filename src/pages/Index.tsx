@@ -13,6 +13,7 @@ import AuthPage from "@/components/AuthPage";
 import DayDetailDrawer from "@/components/DayDetailDrawer";
 import SearchOverlay from "@/components/SearchOverlay";
 import InsightsCard from "@/components/InsightsCard";
+import BudgetProgressBar from "@/components/BudgetProgressBar";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useAuth } from "@/hooks/useAuth";
 import { Expense, CATEGORIES } from "@/lib/types";
