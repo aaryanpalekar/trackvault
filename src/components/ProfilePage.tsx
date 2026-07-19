@@ -29,6 +29,8 @@ export default function ProfilePage({
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState(false);
   const [nameInput, setNameInput] = useState(username);
+  const [budgetOpen, setBudgetOpen] = useState(false);
+  const { budgets } = useBudgets();
 
   const toggleDark = () => {
     const next = !dark;
