@@ -199,6 +199,8 @@ export default function ProfilePage({
       <Button variant="outline" onClick={onSignOut} className="w-full rounded-xl gap-2">
         <LogOut className="h-4 w-4" /> Sign out
       </Button>
+
+      <BudgetDialog open={budgetOpen} onClose={() => setBudgetOpen(false)} currency={currency} />
     </div>
   );
 }
