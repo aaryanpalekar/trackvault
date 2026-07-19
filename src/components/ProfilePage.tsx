@@ -130,6 +130,27 @@ export default function ProfilePage({
         </div>
       </div>
 
+      {/* Budgets */}
+      <button
+        onClick={() => setBudgetOpen(true)}
+        className="mb-4 w-full rounded-2xl bg-card p-4 text-left shadow-card hover-lift"
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Wallet className="h-5 w-5" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold">Monthly budgets</p>
+            <p className="text-[11px] text-muted-foreground">
+              {budgets.overall
+                ? `${currency.symbol}${budgets.overall.toLocaleString()} overall${Object.keys(budgets.categories).length ? ` · ${Object.keys(budgets.categories).length} category caps` : ""}`
+                : "Set a monthly cap to unlock budget-aware insights"}
+            </p>
+          </div>
+          <Pencil className="h-4 w-4 text-muted-foreground" />
+        </div>
+      </button>
+
       {/* Monthly Report Download */}
       <div className="mb-4">
         <DownloadReportDialog
