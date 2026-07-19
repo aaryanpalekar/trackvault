@@ -211,9 +211,10 @@ const HomePage = () => {
               </div>
             )}
 
-            {/* Daily / Weekly / Monthly insights */}
+            {/* Budget progress + Insights */}
+            <BudgetProgressBar expenses={expenses} currency={currency} />
             <div className="mb-4 sm:mb-5">
-              <InsightsCard expenses={expenses} incomes={incomes} currency={currency} />
+              <InsightsCard expenses={expenses} currency={currency} />
             </div>
 
             {/* Two-column on desktop: chart + recent */}
