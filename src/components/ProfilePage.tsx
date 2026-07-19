@@ -1,10 +1,12 @@
 import { CURRENCIES, Currency } from "@/lib/currencies";
-import { Check, Globe, Moon, Sun, LogOut, Pencil } from "lucide-react";
+import { Check, Globe, Moon, Sun, LogOut, Pencil, Wallet } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import DownloadReportDialog from "@/components/DownloadReportDialog";
+import BudgetDialog from "@/components/BudgetDialog";
+import { useBudgets } from "@/hooks/useBudgets";
 import { Expense, Income, Borrowing } from "@/lib/types";
 
 interface ProfilePageProps {
@@ -27,6 +29,8 @@ export default function ProfilePage({
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState(false);
   const [nameInput, setNameInput] = useState(username);
+  const [budgetOpen, setBudgetOpen] = useState(false);
+  const { budgets } = useBudgets();
 
   const toggleDark = () => {
     const next = !dark;
@@ -126,6 +130,27 @@ export default function ProfilePage({
         </div>
       </div>
 
+      {/* Budgets */}
+      <button
+        onClick={() => setBudgetOpen(true)}
+        className="mb-4 w-full rounded-2xl bg-card p-4 text-left shadow-card hover-lift"
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Wallet className="h-5 w-5" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold">Monthly budgets</p>
+            <p className="text-[11px] text-muted-foreground">
+              {budgets.overall
+                ? `${currency.symbol}${budgets.overall.toLocaleString()} overall${Object.keys(budgets.categories).length ? ` · ${Object.keys(budgets.categories).length} category caps` : ""}`
+                : "Set a monthly cap to unlock budget-aware insights"}
+            </p>
+          </div>
+          <Pencil className="h-4 w-4 text-muted-foreground" />
+        </div>
+      </button>
+
       {/* Monthly Report Download */}
       <div className="mb-4">
         <DownloadReportDialog
@@ -174,6 +199,8 @@ export default function ProfilePage({
       <Button variant="outline" onClick={onSignOut} className="w-full rounded-xl gap-2">
         <LogOut className="h-4 w-4" /> Sign out
       </Button>
+
+      <BudgetDialog open={budgetOpen} onClose={() => setBudgetOpen(false)} currency={currency} />
     </div>
   );
 }

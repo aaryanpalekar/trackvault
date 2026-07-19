@@ -31,8 +31,11 @@ export const CATEGORIES = [
   { label: "Tea/Coffee", emoji: "☕" },
   { label: "Snacks", emoji: "🍿" },
   { label: "Auto/Cab", emoji: "🛺" },
+  { label: "Metro", emoji: "🚇" },
   { label: "Food", emoji: "🍛" },
+  { label: "Grocery", emoji: "🛒" },
   { label: "Shopping", emoji: "🛍️" },
+  { label: "Stationery", emoji: "✏️" },
   { label: "Other", emoji: "📦" },
 ] as const;
 
@@ -54,9 +57,8 @@ export interface Income {
 export const INCOME_SOURCES = [
   { label: "Salary", emoji: "💼" },
   { label: "Freelance", emoji: "💻" },
-  { label: "Refund", emoji: "↩️" },
-  { label: "Gift", emoji: "🎁" },
-  { label: "Friend", emoji: "🤝" },
   { label: "Investment", emoji: "📈" },
+  { label: "Bonus", emoji: "🎯" },
+  { label: "Gift", emoji: "🎁" },
   { label: "Other", emoji: "💰" },
 ] as const;
