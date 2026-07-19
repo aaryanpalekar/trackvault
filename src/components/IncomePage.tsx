@@ -121,8 +121,8 @@ export default function IncomePage({ incomes, currency, onAdd, onUpdate, onDelet
     <div className="animate-slide-up pb-24 sm:max-w-2xl sm:mx-auto lg:max-w-5xl">
       <div className="mb-4 flex items-end justify-between">
         <div>
-          <h1 className="font-heading text-2xl font-bold sm:text-3xl">Received</h1>
-          <p className="text-xs text-muted-foreground">Track money coming in</p>
+          <h1 className="font-heading text-2xl font-bold sm:text-3xl">Income</h1>
+          <p className="text-xs text-muted-foreground">Salary, freelance and other real income — reimbursements belong on the Dues tab.</p>
         </div>
       </div>
 
