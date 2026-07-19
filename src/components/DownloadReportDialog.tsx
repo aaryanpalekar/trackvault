@@ -149,7 +149,7 @@ export default function DownloadReportDialog({ username, currency, expenses, inc
           {/* Live preview stats */}
           <div className="rounded-2xl border border-border bg-card p-4">
             <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Preview</p>
-            <div className="grid grid-cols-3 gap-3 text-center">
+            <div className="grid grid-cols-2 gap-3 text-center">
               <div>
                 <p className="text-[10px] text-muted-foreground">Spent</p>
                 <p className="font-heading text-sm font-bold text-destructive">{fmt(stats.spent)}</p>
@@ -157,12 +157,6 @@ export default function DownloadReportDialog({ username, currency, expenses, inc
               <div>
                 <p className="text-[10px] text-muted-foreground">Income</p>
                 <p className="font-heading text-sm font-bold text-primary">{fmt(stats.earned)}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground">Net</p>
-                <p className={cn("font-heading text-sm font-bold", stats.net >= 0 ? "text-primary" : "text-destructive")}>
-                  {stats.net >= 0 ? "+" : "-"}{fmt(Math.abs(stats.net))}
-                </p>
               </div>
             </div>
             <div className="mt-3 flex items-center justify-between border-t border-border pt-3 text-[11px]">
