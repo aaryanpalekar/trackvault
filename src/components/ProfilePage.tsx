@@ -1,10 +1,12 @@
 import { CURRENCIES, Currency } from "@/lib/currencies";
-import { Check, Globe, Moon, Sun, LogOut, Pencil } from "lucide-react";
+import { Check, Globe, Moon, Sun, LogOut, Pencil, Wallet } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import DownloadReportDialog from "@/components/DownloadReportDialog";
+import BudgetDialog from "@/components/BudgetDialog";
+import { useBudgets } from "@/hooks/useBudgets";
 import { Expense, Income, Borrowing } from "@/lib/types";
 
 interface ProfilePageProps {
