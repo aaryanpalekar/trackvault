@@ -152,22 +152,11 @@ const HomePage = () => {
                   onClick={() => setTab("income")}
                   className="rounded-3xl bg-gradient-accent p-4 text-left text-accent-foreground shadow-elevated transition-bounce hover:-translate-y-1 hover:shadow-glow sm:p-5"
                 >
-                  <p className="text-[10px] opacity-80 sm:text-xs">Received today</p>
+                  <p className="text-[10px] opacity-80 sm:text-xs">Income today</p>
                   <p className="font-heading text-xl font-bold sm:text-2xl">
                     +{currency.symbol}{todayIncomeTotal.toLocaleString()}
                   </p>
                   <p className="text-[10px] opacity-70 sm:text-xs">{todayIncomeCount} entr{todayIncomeCount === 1 ? "y" : "ies"}</p>
-                </button>
-              ) : totalOwed > 0 || totalIOwe > 0 ? (
-                <button
-                  onClick={() => setTab("dues")}
-                  className="rounded-3xl bg-gradient-accent p-4 text-left text-accent-foreground shadow-elevated transition-bounce hover:-translate-y-1 hover:shadow-glow sm:p-5"
-                >
-                  <p className="text-[10px] opacity-80 sm:text-xs">Net dues</p>
-                  <p className="font-heading text-xl font-bold sm:text-2xl">
-                    {totalOwed >= totalIOwe ? "+" : "-"}{currency.symbol}{Math.abs(totalOwed - totalIOwe).toLocaleString()}
-                  </p>
-                  <p className="text-[10px] opacity-70 sm:text-xs">{pendingBorrowings.length} pending</p>
                 </button>
               ) : (
                 <div className="rounded-3xl border border-border/60 bg-card p-4 shadow-card transition-bounce hover:-translate-y-1 hover:shadow-elevated sm:p-5 lg:hidden">
