@@ -1,73 +1,70 @@
-# Welcome to your Lovable project
+# Track Vault
 
-## Project info
+A modern, responsive expense tracker built for clarity and control. Track daily spending, manage income, set budgets, and understand your financial patterns through actionable insights and reports.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Features
 
-## How can I edit this code?
+- **Expense Tracking** — Log expenses with categories, payment methods, notes, and custom names. Calendar-based date selection lets you record past transactions accurately.
+- **Income Tracking** — Record income from salary, freelance, investments, bonuses, gifts, and other sources.
+- **Budgets** — Set monthly overall budgets and optional per-category budgets with visual progress bars.
+- **Insights** — AI-assisted, pattern-based insights including month-end forecasts, category spikes, behavioral trends, and concrete savings suggestions.
+- **Dues Management** — Track money lent and owed with reminders and settlement support.
+- **Reports & Exports** — Download clean monthly expense reports as PDF, Excel (.xlsx), or CSV.
+- **Statistics** — Interactive charts for daily, weekly, monthly, and yearly spending with drill-down support.
+- **Global Search** — Quickly find transactions across your history.
+- **Responsive Design** — Fully optimized for mobile and desktop with a glassmorphic, premium UI.
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- **Frontend:** React, TypeScript, Vite, Tailwind CSS, shadcn/ui
+- **Backend:** Lovable Cloud (auth, database, storage)
+- **Charts:** Recharts
+- **Reports:** jsPDF, jspdf-autotable, ExcelJS
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+- Node.js 18+
+- npm or bun
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Clone the repository
 git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The app will be available at `http://localhost:8080`.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Project Structure
 
-**Use GitHub Codespaces**
+```
+src/
+  components/       # Reusable UI components (sheets, dialogs, charts, cards)
+  hooks/            # Custom React hooks (auth, expenses, budgets, mobile)
+  lib/              # Utilities, types, currencies, report generators
+  pages/            # Top-level page components
+  integrations/     # Backend client and generated types
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Available Scripts
 
-## What technologies are used for this project?
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start the development server |
+| `npm run build` | Build for production |
+| `npm run preview` | Preview the production build |
+| `npm run test` | Run Vitest tests |
+| `npm run lint` | Run ESLint |
 
-This project is built with:
+## License
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+MIT
