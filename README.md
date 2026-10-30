@@ -1,70 +1,83 @@
-# Track Vault
+# TrackVault
 
-A modern, responsive expense tracker built for clarity and control. Track daily spending, manage income, set budgets, and understand your financial patterns through actionable insights and reports.
+TrackVault is a personal finance tracker for recording expenses and income, setting budgets, tracking money owed, and reviewing spending trends.
 
 ## Features
 
-- **Expense Tracking** — Log expenses with categories, payment methods, notes, and custom names. Calendar-based date selection lets you record past transactions accurately.
-- **Income Tracking** — Record income from salary, freelance, investments, bonuses, gifts, and other sources.
-- **Budgets** — Set monthly overall budgets and optional per-category budgets with visual progress bars.
-- **Insights** — AI-assisted, pattern-based insights including month-end forecasts, category spikes, behavioral trends, and concrete savings suggestions.
-- **Dues Management** — Track money lent and owed with reminders and settlement support.
-- **Reports & Exports** — Download clean monthly expense reports as PDF, Excel (.xlsx), or CSV.
-- **Statistics** — Interactive charts for daily, weekly, monthly, and yearly spending with drill-down support.
-- **Global Search** — Quickly find transactions across your history.
-- **Responsive Design** — Fully optimized for mobile and desktop with a glassmorphic, premium UI.
+- Record expenses and income with categories, dates, notes, and payment methods.
+- Set monthly budgets and review progress by category.
+- Track money lent and owed.
+- Explore spending summaries, charts, and pattern-based insights.
+- Search transactions and export monthly reports as PDF, Excel, or CSV.
+- Use the responsive interface on desktop and mobile, with support for multiple currencies.
 
-## Tech Stack
+## Technology
 
-- **Frontend:** React, TypeScript, Vite, Tailwind CSS, shadcn/ui
-- **Backend:** Lovable Cloud (auth, database, storage)
-- **Charts:** Recharts
-- **Reports:** jsPDF, jspdf-autotable, ExcelJS
+- React 18, TypeScript, and Vite
+- Supabase Auth and Postgres
+- Tailwind CSS, shadcn/ui, and Recharts
+- jsPDF and ExcelJS for report exports
 
-## Getting Started
+## Run locally
 
-### Prerequisites
+### Requirements
 
-- Node.js 18+
-- npm or bun
+- Node.js 18 or later
+- npm
+- A Supabase project
 
-### Installation
+### Setup
 
-```sh
-# Clone the repository
-git clone <YOUR_GIT_URL>
-cd <YOUR_PROJECT_NAME>
+1. Clone the repository and install dependencies:
 
-# Install dependencies
-npm install
+   ```sh
+   git clone https://github.com/aaryanpalekar/trackvault.git
+   cd trackvault
+   npm install
+   ```
 
-# Start the development server
-npm run dev
-```
+2. Copy `.env.example` to `.env` and fill in the URL and publishable (or legacy `anon`) key from your Supabase project settings.
 
-The app will be available at `http://localhost:8080`.
+3. Apply the SQL migrations in `supabase/migrations/` to your Supabase project. With the Supabase CLI installed, link your project and run:
 
-## Project Structure
+   ```sh
+   supabase link --project-ref YOUR_PROJECT_ID
+   supabase db push
+   ```
 
-```
-src/
-  components/       # Reusable UI components (sheets, dialogs, charts, cards)
-  hooks/            # Custom React hooks (auth, expenses, budgets, mobile)
-  lib/              # Utilities, types, currencies, report generators
-  pages/            # Top-level page components
-  integrations/     # Backend client and generated types
-```
+4. In Supabase Auth settings, enable the providers you intend to use. For Google sign-in, configure Google OAuth credentials and add your local and deployed app URLs to the allowed redirect URLs.
 
-## Available Scripts
+5. Start the development server:
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start the development server |
-| `npm run build` | Build for production |
-| `npm run preview` | Preview the production build |
-| `npm run test` | Run Vitest tests |
+   ```sh
+   npm run dev
+   ```
+
+Vite prints the local address when the server starts.
+
+## Environment variables
+
+| Variable | Description |
+| --- | --- |
+| `VITE_SUPABASE_URL` | Supabase project URL |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (or legacy anon key) used by the browser client |
+
+These `VITE_` values are included in the browser build and are not secrets. Never put a Supabase `service_role` key, database password, OAuth client secret, or other server credential in a `VITE_` variable or commit it to the repository. Keep local values in `.env`.
+
+## Useful commands
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the local development server |
+| `npm run build` | Create a production build in `dist/` |
+| `npm run preview` | Preview the production build locally |
 | `npm run lint` | Run ESLint |
+| `npm test` | Run the test suite once |
+
+## Database and security
+
+The Supabase schema and migration history are in `supabase/`. Review row-level security policies and Auth redirect settings in your own Supabase project before deploying. Do not expose service-role credentials in client code.
 
 ## License
 
-MIT
+No license has been added yet. Until a license is chosen and committed, the source is not explicitly offered for reuse under an open-source license.
